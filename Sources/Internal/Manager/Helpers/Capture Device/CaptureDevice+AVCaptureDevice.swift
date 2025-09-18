@@ -39,3 +39,18 @@ extension AVCaptureDevice {
         }
     }
 }
+
+// MARK: - Sendable wrappers
+extension AVCaptureDevice {
+    func setExposureModeCustom(duration: CMTime, iso ISO: Float, completionHandler handler: (@Sendable (CMTime) -> Void)? = nil) {
+        self.setExposureModeCustom(duration: duration, iso: ISO) { time in
+            handler?(time)
+        }
+    }
+    
+    func setExposureTargetBias(_ bias: Float, completionHandler handler: (@Sendable (CMTime) -> Void)? = nil) {
+        self.setExposureTargetBias(bias) { time in
+            handler?(time)
+        }
+    }
+}
