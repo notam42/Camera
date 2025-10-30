@@ -38,7 +38,10 @@ private extension DefaultCameraScreen {
     }
     func createContentView() -> some View {
         createCameraOutputView()
-            .ignoresSafeArea()
+        .aspectRatio(9/16, contentMode: .fit) // Match 1080x1920 aspect ratio
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+        .ignoresSafeArea()
     }
     func createBottomBar() -> some View {
         DefaultCameraScreen.BottomBar(parent: self)
