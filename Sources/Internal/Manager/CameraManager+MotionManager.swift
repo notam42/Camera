@@ -28,73 +28,73 @@ extension CameraManagerMotionManager {
 }
 private extension CameraManagerMotionManager {
     func handleAccelerometerUpdates(_ data: CMAccelerometerData?, _ error: Error?) {
-        guard let data, error == nil else { return }
+        guard let data, error == nil, let parent = parent else { return }
 
-        let newDeviceOrientation = getDeviceOrientation(data.acceleration)
-        updateDeviceOrientation(newDeviceOrientation)
-        updateUserBlockedScreenRotation()
-        updateFrameOrientation()
-        redrawGrid()
+        let newDeviceOrientation = getDeviceOrientation(data.acceleration, currentOrientation: parent.attributes.deviceOrientation)
+        updateDeviceOrientation(newDeviceOrientation, parent: parent)
+        updateUserBlockedScreenRotation(parent: parent)
+        updateFrameOrientation(parent: parent)
+        redrawGrid(parent: parent)
     }
 }
 private extension CameraManagerMotionManager {
-    func getDeviceOrientation(_ acceleration: CMAcceleration) -> AVCaptureVideoOrientation { switch acceleration {
+    func getDeviceOrientation(_ acceleration: CMAcceleration, currentOrientation: AVCaptureVideoOrientation) -> AVCaptureVideoOrientation { switch acceleration {
         case let acceleration where acceleration.x >= 0.75: .landscapeLeft
         case let acceleration where acceleration.x <= -0.75: .landscapeRight
         case let acceleration where acceleration.y <= -0.75: .portrait
         case let acceleration where acceleration.y >= 0.75: .portraitUpsideDown
-        default: parent.attributes.deviceOrientation
+        default: currentOrientation
     }}
-    func updateDeviceOrientation(_ newDeviceOrientation: AVCaptureVideoOrientation) { if newDeviceOrientation != parent.attributes.deviceOrientation {
+    func updateDeviceOrientation(_ newDeviceOrientation: AVCaptureVideoOrientation, parent: CameraManager) { if newDeviceOrientation != parent.attributes.deviceOrientation {
         parent.attributes.deviceOrientation = newDeviceOrientation
     }}
-    func updateUserBlockedScreenRotation() {
-        let newUserBlockedScreenRotation = getNewUserBlockedScreenRotation()
+    func updateUserBlockedScreenRotation(parent: CameraManager) {
+        let newUserBlockedScreenRotation = getNewUserBlockedScreenRotation(parent: parent)
         if newUserBlockedScreenRotation != parent.attributes.userBlockedScreenRotation { parent.attributes.userBlockedScreenRotation = newUserBlockedScreenRotation }
     }
-    func updateFrameOrientation() { if UIDevice.current.orientation != .portraitUpsideDown {
-        let newFrameOrientation = getNewFrameOrientation(parent.attributes.orientationLocked ? .portrait : UIDevice.current.orientation)
-        updateFrameOrientation(newFrameOrientation)
+    func updateFrameOrientation(parent: CameraManager) { if UIDevice.current.orientation != .portraitUpsideDown {
+        let newFrameOrientation = getNewFrameOrientation(parent.attributes.orientationLocked ? .portrait : UIDevice.current.orientation, parent: parent)
+        updateFrameOrientation(newFrameOrientation, parent: parent)
     }}
-    func redrawGrid() { if !parent.attributes.orientationLocked {
+    func redrawGrid(parent: CameraManager) { if !parent.attributes.orientationLocked {
         parent.cameraGridView.draw(.zero)
     }}
 }
 private extension CameraManagerMotionManager {
-    func getNewUserBlockedScreenRotation() -> Bool { switch parent.attributes.deviceOrientation.rawValue == UIDevice.current.orientation.rawValue {
+    func getNewUserBlockedScreenRotation(parent: CameraManager) -> Bool { switch parent.attributes.deviceOrientation.rawValue == UIDevice.current.orientation.rawValue {
         case true: false
         case false: !parent.attributes.orientationLocked
     }}
-    func getNewFrameOrientation(_ orientation: UIDeviceOrientation) -> CGImagePropertyOrientation { switch parent.attributes.cameraPosition {
-        case .back: getNewFrameOrientationForBackCamera(orientation)
-        case .front: getNewFrameOrientationForFrontCamera(orientation)
+    func getNewFrameOrientation(_ orientation: UIDeviceOrientation, parent: CameraManager) -> CGImagePropertyOrientation { switch parent.attributes.cameraPosition {
+        case .back: getNewFrameOrientationForBackCamera(orientation, parent: parent)
+        case .front: getNewFrameOrientationForFrontCamera(orientation, parent: parent)
     }}
-    func updateFrameOrientation(_ newFrameOrientation: CGImagePropertyOrientation) { if newFrameOrientation != parent.attributes.frameOrientation {
-        let shouldAnimate = shouldAnimateFrameOrientationChange(newFrameOrientation)
-        updateFrameOrientation(withAnimation: shouldAnimate, newFrameOrientation: newFrameOrientation)
+    func updateFrameOrientation(_ newFrameOrientation: CGImagePropertyOrientation, parent: CameraManager) { if newFrameOrientation != parent.attributes.frameOrientation {
+        let shouldAnimate = shouldAnimateFrameOrientationChange(newFrameOrientation, parent: parent)
+        updateFrameOrientation(withAnimation: shouldAnimate, newFrameOrientation: newFrameOrientation, parent: parent)
     }}
 }
 private extension CameraManagerMotionManager {
-    func getNewFrameOrientationForBackCamera(_ orientation: UIDeviceOrientation) -> CGImagePropertyOrientation { switch orientation {
+    func getNewFrameOrientationForBackCamera(_ orientation: UIDeviceOrientation, parent: CameraManager) -> CGImagePropertyOrientation { switch orientation {
         case .portrait: parent.attributes.mirrorOutput ? .leftMirrored : .right
         case .landscapeLeft: parent.attributes.mirrorOutput ? .upMirrored : .up
         case .landscapeRight: parent.attributes.mirrorOutput ? .downMirrored : .down
         default: parent.attributes.mirrorOutput ? .leftMirrored : .right
     }}
-    func getNewFrameOrientationForFrontCamera(_ orientation: UIDeviceOrientation) -> CGImagePropertyOrientation { switch orientation {
+    func getNewFrameOrientationForFrontCamera(_ orientation: UIDeviceOrientation, parent: CameraManager) -> CGImagePropertyOrientation { switch orientation {
         case .portrait: parent.attributes.mirrorOutput ? .right : .leftMirrored
         case .landscapeLeft: parent.attributes.mirrorOutput ? .down : .downMirrored
         case .landscapeRight: parent.attributes.mirrorOutput ? .up : .upMirrored
         default: parent.attributes.mirrorOutput ? .right : .leftMirrored
     }}
-    func shouldAnimateFrameOrientationChange(_ newFrameOrientation: CGImagePropertyOrientation) -> Bool {
+    func shouldAnimateFrameOrientationChange(_ newFrameOrientation: CGImagePropertyOrientation, parent: CameraManager) -> Bool {
         let backCameraOrientations: [CGImagePropertyOrientation] = [.left, .right, .up, .down],
             frontCameraOrientations: [CGImagePropertyOrientation] = [.leftMirrored, .rightMirrored, .upMirrored, .downMirrored]
 
         return (backCameraOrientations.contains(newFrameOrientation) && backCameraOrientations.contains(parent.attributes.frameOrientation)) ||
         (frontCameraOrientations.contains(parent.attributes.frameOrientation) && frontCameraOrientations.contains(newFrameOrientation))
     }
-    func updateFrameOrientation(withAnimation shouldAnimate: Bool, newFrameOrientation: CGImagePropertyOrientation) { Task {
+    func updateFrameOrientation(withAnimation shouldAnimate: Bool, newFrameOrientation: CGImagePropertyOrientation, parent: CameraManager) { Task {
         await parent.cameraMetalView.beginCameraOrientationAnimation(if: shouldAnimate)
         parent.attributes.frameOrientation = newFrameOrientation
         parent.cameraMetalView.finishCameraOrientationAnimation(if: shouldAnimate)
@@ -107,3 +107,107 @@ extension CameraManagerMotionManager {
         manager.stopAccelerometerUpdates()
     }
 }
+
+/*
+ BACKUP
+
+ import CoreMotion
+ import AVKit
+
+ @MainActor class CameraManagerMotionManager {
+     private(set) weak var parent: CameraManager!
+     //private(set) var parent: CameraManager!
+     private(set) var manager: CMMotionManager = .init()
+ }
+
+ // MARK: Setup
+ extension CameraManagerMotionManager {
+     func setup(parent: CameraManager) {
+         self.parent = parent
+         manager.accelerometerUpdateInterval = 0.05
+         manager.startAccelerometerUpdates(to: .current ?? .init(), withHandler: handleAccelerometerUpdates)
+     }
+ }
+ private extension CameraManagerMotionManager {
+     func handleAccelerometerUpdates(_ data: CMAccelerometerData?, _ error: Error?) {
+         guard let data, error == nil else { return }
+
+         let newDeviceOrientation = getDeviceOrientation(data.acceleration)
+         updateDeviceOrientation(newDeviceOrientation)
+         updateUserBlockedScreenRotation()
+         updateFrameOrientation()
+         redrawGrid()
+     }
+ }
+ private extension CameraManagerMotionManager {
+     func getDeviceOrientation(_ acceleration: CMAcceleration) -> AVCaptureVideoOrientation { switch acceleration {
+         case let acceleration where acceleration.x >= 0.75: .landscapeLeft
+         case let acceleration where acceleration.x <= -0.75: .landscapeRight
+         case let acceleration where acceleration.y <= -0.75: .portrait
+         case let acceleration where acceleration.y >= 0.75: .portraitUpsideDown
+         default: parent.attributes.deviceOrientation
+     }}
+     func updateDeviceOrientation(_ newDeviceOrientation: AVCaptureVideoOrientation) { if newDeviceOrientation != parent.attributes.deviceOrientation {
+         parent.attributes.deviceOrientation = newDeviceOrientation
+     }}
+     func updateUserBlockedScreenRotation() {
+         let newUserBlockedScreenRotation = getNewUserBlockedScreenRotation()
+         if newUserBlockedScreenRotation != parent.attributes.userBlockedScreenRotation { parent.attributes.userBlockedScreenRotation = newUserBlockedScreenRotation }
+     }
+     func updateFrameOrientation() { if UIDevice.current.orientation != .portraitUpsideDown {
+         let newFrameOrientation = getNewFrameOrientation(parent.attributes.orientationLocked ? .portrait : UIDevice.current.orientation)
+         updateFrameOrientation(newFrameOrientation)
+     }}
+     func redrawGrid() { if !parent.attributes.orientationLocked {
+         parent.cameraGridView.draw(.zero)
+     }}
+ }
+ private extension CameraManagerMotionManager {
+     func getNewUserBlockedScreenRotation() -> Bool { switch parent.attributes.deviceOrientation.rawValue == UIDevice.current.orientation.rawValue {
+         case true: false
+         case false: !parent.attributes.orientationLocked
+     }}
+     func getNewFrameOrientation(_ orientation: UIDeviceOrientation) -> CGImagePropertyOrientation { switch parent.attributes.cameraPosition {
+         case .back: getNewFrameOrientationForBackCamera(orientation)
+         case .front: getNewFrameOrientationForFrontCamera(orientation)
+     }}
+     func updateFrameOrientation(_ newFrameOrientation: CGImagePropertyOrientation) { if newFrameOrientation != parent.attributes.frameOrientation {
+         let shouldAnimate = shouldAnimateFrameOrientationChange(newFrameOrientation)
+         updateFrameOrientation(withAnimation: shouldAnimate, newFrameOrientation: newFrameOrientation)
+     }}
+ }
+ private extension CameraManagerMotionManager {
+     func getNewFrameOrientationForBackCamera(_ orientation: UIDeviceOrientation) -> CGImagePropertyOrientation { switch orientation {
+         case .portrait: parent.attributes.mirrorOutput ? .leftMirrored : .right
+         case .landscapeLeft: parent.attributes.mirrorOutput ? .upMirrored : .up
+         case .landscapeRight: parent.attributes.mirrorOutput ? .downMirrored : .down
+         default: parent.attributes.mirrorOutput ? .leftMirrored : .right
+     }}
+     func getNewFrameOrientationForFrontCamera(_ orientation: UIDeviceOrientation) -> CGImagePropertyOrientation { switch orientation {
+         case .portrait: parent.attributes.mirrorOutput ? .right : .leftMirrored
+         case .landscapeLeft: parent.attributes.mirrorOutput ? .down : .downMirrored
+         case .landscapeRight: parent.attributes.mirrorOutput ? .up : .upMirrored
+         default: parent.attributes.mirrorOutput ? .right : .leftMirrored
+     }}
+     func shouldAnimateFrameOrientationChange(_ newFrameOrientation: CGImagePropertyOrientation) -> Bool {
+         let backCameraOrientations: [CGImagePropertyOrientation] = [.left, .right, .up, .down],
+             frontCameraOrientations: [CGImagePropertyOrientation] = [.leftMirrored, .rightMirrored, .upMirrored, .downMirrored]
+
+         return (backCameraOrientations.contains(newFrameOrientation) && backCameraOrientations.contains(parent.attributes.frameOrientation)) ||
+         (frontCameraOrientations.contains(parent.attributes.frameOrientation) && frontCameraOrientations.contains(newFrameOrientation))
+     }
+     func updateFrameOrientation(withAnimation shouldAnimate: Bool, newFrameOrientation: CGImagePropertyOrientation) { Task {
+         await parent.cameraMetalView.beginCameraOrientationAnimation(if: shouldAnimate)
+         parent.attributes.frameOrientation = newFrameOrientation
+         parent.cameraMetalView.finishCameraOrientationAnimation(if: shouldAnimate)
+     }}
+ }
+
+ // MARK: Reset
+ extension CameraManagerMotionManager {
+     func reset() {
+         manager.stopAccelerometerUpdates()
+     }
+ }
+
+ */
