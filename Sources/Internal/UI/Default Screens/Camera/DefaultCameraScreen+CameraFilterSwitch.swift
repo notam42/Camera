@@ -14,17 +14,15 @@ extension DefaultCameraScreen { struct CameraFilterSwitch: View {
   
     var body: some View {
       ScrollView(.horizontal, showsIndicators: false) {
-        List {
-          HStack(spacing: 4) {
-            ForEach(CameraFilter.allCases, id: \.self) { filter in
-              createFilterTypeButton(filter: filter)
-            }
-              
+        HStack(spacing: 4) {
+          ForEach(CameraFilter.allCases, id: \.self) { filter in
+            createFilterTypeButton(filter: filter)
           }
-          .padding(8)
-          //.background(Color(.mijickBackgroundPrimary50))
-          //.mask(Capsule())
+            
         }
+        .padding(8)
+        //.background(Color(.mijickBackgroundPrimary50))
+        //.mask(Capsule())
 
       }
       //.scrollIndicators(.hidden)
@@ -68,8 +66,8 @@ private extension Button {
         .font(active ? .title : .caption)
       //Image(icon)
             //.resizable()
-            //.frame(width: iconSize, height: iconSize)
-            //.foregroundColor(iconColor)
+            .frame(width: iconSize, height: iconSize)
+            .foregroundColor(iconColor)
             .padding(8)
             .background(Color(.mijickBackgroundSecondary))
             .mask(Circle())
