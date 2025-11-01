@@ -26,7 +26,7 @@ extension DefaultCameraScreen { struct CameraFilterSwitch: View {
 
       }
       //.scrollIndicators(.hidden)
-      .frame(height: 40)
+      .frame(height: 42)
     }
 }}
 private extension DefaultCameraScreen.CameraFilterSwitch {
@@ -63,24 +63,68 @@ fileprivate struct Button: View {
 private extension Button {
     func createButtonLabel() -> some View {
       Text("\(icon)")
-        //.font(active ? .title : .caption)
+        .font(active ? .title : .callout)
       //Image(icon)
             //.resizable()
             .frame(width: iconSize, height: iconSize)
-            .foregroundColor(iconColor)
             .padding(8)
-            .background(Color(.mijickBackgroundSecondary))
-            .border(active ? .yellow : .clear, width: 2)
-            .mask(Circle())
+            .background(Color.yellow.opacity(0.3))
+            //.background(Color(.mijickBackgroundSecondary))
+            
+            //.mask(Circle())
     }
 }
 private extension Button {
     var iconSize: CGFloat { switch active {
-        case true: 38//28
-        case false: 36//20
+        case true: 36//28
+        case false: 32//20
     }}
     var iconColor: Color { switch active {
         case true: .init(.mijickBackgroundYellow)
         case false: .init(.mijickTextTertiary)
     }}
+}
+
+#Preview {
+  let active = true
+  let iconSize = 34.0
+  let icon = "🌈"
+
+  
+  ScrollView(.horizontal, showsIndicators: false) {
+    HStack {
+      SwiftUI.Button {
+        //
+      } label: {
+        Text("🌈")
+          .font(.title)
+          //.font(active ? .title : .caption)
+        //Image(icon)
+              //.resizable()
+              .frame(width: 40, height: 40)
+              .padding(8)
+              .background(Color.yellow.opacity(0.3))
+              
+              //.mask(Circle())
+      }
+      .buttonStyle(ButtonScaleStyle())
+      
+      SwiftUI.Button {
+        //
+      } label: {
+        Text("🌈")
+          .font(.callout)
+        //Image(icon)
+              //.resizable()
+              .frame(width: 30, height: 30)
+              .border(.clear, width: 2)
+              .padding(8)
+              //.background(Color(.mijickBackgroundSecondary))
+              
+              .mask(Circle())
+      }
+      .buttonStyle(ButtonScaleStyle())
+    }
+  }
+
 }
