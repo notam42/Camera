@@ -68,7 +68,7 @@ private extension Button {
             //.resizable()
             .frame(width: iconSize, height: iconSize)
             .padding(8)
-            .background(Color.yellow.opacity(0.3))
+            .background(active ? Color.yellow.opacity(0.3) : Color.clear)
             //.background(Color(.mijickBackgroundSecondary))
             
             //.mask(Circle())
