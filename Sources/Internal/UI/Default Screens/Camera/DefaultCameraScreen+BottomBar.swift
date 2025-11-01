@@ -17,7 +17,9 @@ extension DefaultCameraScreen { struct BottomBar: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            createOutputTypeSwitch()
+            //createOutputTypeSwitch()
+          createFilterTypeSwitch()
+          
             createButtons()
         }
         .frame(maxWidth: .infinity)
@@ -25,9 +27,10 @@ extension DefaultCameraScreen { struct BottomBar: View {
         .padding(.horizontal, 32)
     }
 }}
+
 private extension DefaultCameraScreen.BottomBar {
-    @ViewBuilder func createOutputTypeSwitch() -> some View { if isOutputTypeSwitchActive {
-        DefaultCameraScreen.CameraOutputSwitch(parent: parent)
+    @ViewBuilder func createFilterTypeSwitch() -> some View { if isFilterTypeSwitchActive {
+        DefaultCameraScreen.CameraFilterSwitch(parent: parent)
             .offset(y: -80)
     }}
     func createButtons() -> some View {
@@ -38,6 +41,20 @@ private extension DefaultCameraScreen.BottomBar {
         }.frame(height: 72)
     }
 }
+
+//private extension DefaultCameraScreen.BottomBar {
+//    @ViewBuilder func createOutputTypeSwitch() -> some View { if isOutputTypeSwitchActive {
+//        DefaultCameraScreen.CameraOutputSwitch(parent: parent)
+//            .offset(y: -80)
+//    }}
+//    func createButtons() -> some View {
+//        ZStack {
+//            createLightButton()
+//            createCaptureButton()
+//            createChangeCameraPositionButton()
+//        }.frame(height: 72)
+//    }
+//}
 private extension DefaultCameraScreen.BottomBar {
     @ViewBuilder func createLightButton() -> some View { if isLightButtonActive {
         BottomButton(
@@ -91,6 +108,7 @@ private extension DefaultCameraScreen.BottomBar {
 }
 private extension DefaultCameraScreen.BottomBar {
     var isOutputTypeSwitchActive: Bool { parent.config.cameraOutputSwitchAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording }
+    var isFilterTypeSwitchActive: Bool { parent.config.cameraFilterSwitchAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording }
     var isLightButtonActive: Bool { parent.config.lightButtonAllowed && parent.hasLight && parent.cameraManager.captureSession.isRunning && !parent.isRecording }
     var isCaptureButtonActive: Bool { parent.config.captureButtonAllowed && parent.cameraManager.captureSession.isRunning }
     var isChangeCameraPositionButtonActive: Bool { parent.config.cameraPositionButtonAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording }

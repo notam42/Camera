@@ -22,6 +22,7 @@ public extension DefaultCameraScreen {
 public extension DefaultCameraScreen {
     func captureButtonAllowed(_ value: Bool) -> Self { config.captureButtonAllowed = value; return self }
     func cameraOutputSwitchAllowed(_ value: Bool) -> Self { config.cameraOutputSwitchAllowed = value; return self }
+    func cameraFilterSwitchAllowed(_ value: Bool) -> Self { config.cameraFilterSwitchAllowed = value; return self }
     func cameraPositionButtonAllowed(_ value: Bool) -> Self { config.cameraPositionButtonAllowed = value; return self }
     func flashButtonAllowed(_ value: Bool) -> Self { config.flashButtonAllowed = value; return self }
     func lightButtonAllowed(_ value: Bool) -> Self { config.lightButtonAllowed = value; return self }
