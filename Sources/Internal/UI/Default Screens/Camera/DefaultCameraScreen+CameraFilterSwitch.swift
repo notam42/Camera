@@ -63,20 +63,21 @@ fileprivate struct Button: View {
 private extension Button {
     func createButtonLabel() -> some View {
       Text("\(icon)")
-        .font(active ? .title : .caption)
+        //.font(active ? .title : .caption)
       //Image(icon)
             //.resizable()
             .frame(width: iconSize, height: iconSize)
             .foregroundColor(iconColor)
             .padding(8)
             .background(Color(.mijickBackgroundSecondary))
+            .border(active ? .yellow : .clear, width: 2)
             .mask(Circle())
     }
 }
 private extension Button {
     var iconSize: CGFloat { switch active {
-        case true: 36//28
-        case false: 30//20
+        case true: 38//28
+        case false: 36//20
     }}
     var iconColor: Color { switch active {
         case true: .init(.mijickBackgroundYellow)
