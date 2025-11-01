@@ -10,9 +10,9 @@ import SwiftUI
 extension DefaultCameraScreen { struct CameraFilterSwitch: View {
     let parent: DefaultCameraScreen
 
-
     var body: some View {
-        HStack(spacing: 4) {
+      ScrollView(.horizontal) {
+        LazyHStack(spacing: 4) {
           ForEach(CameraFilter.allCases, id: \.self) { filter in
             createFilterTypeButton(filter: filter)
           }
@@ -21,6 +21,7 @@ extension DefaultCameraScreen { struct CameraFilterSwitch: View {
         .padding(8)
         .background(Color(.mijickBackgroundPrimary50))
         .mask(Capsule())
+      }
     }
 }}
 private extension DefaultCameraScreen.CameraFilterSwitch {
@@ -68,8 +69,8 @@ private extension Button {
 }
 private extension Button {
     var iconSize: CGFloat { switch active {
-        case true: 28
-        case false: 20
+        case true: 36//28
+        case false: 30//20
     }}
     var iconColor: Color { switch active {
         case true: .init(.mijickBackgroundYellow)
