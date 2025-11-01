@@ -9,19 +9,25 @@ import SwiftUI
 
 extension DefaultCameraScreen { struct CameraFilterSwitch: View {
     let parent: DefaultCameraScreen
+  
 
+  
     var body: some View {
-      ScrollView(.horizontal) {
-        LazyHStack(spacing: 4) {
-          ForEach(CameraFilter.allCases, id: \.self) { filter in
-            createFilterTypeButton(filter: filter)
+      ScrollView(.horizontal, showsIndicators: false) {
+        List {
+          HStack(spacing: 4) {
+            ForEach(CameraFilter.allCases, id: \.self) { filter in
+              createFilterTypeButton(filter: filter)
+            }
+              
           }
-            
+          .padding(8)
+          //.background(Color(.mijickBackgroundPrimary50))
+          //.mask(Capsule())
         }
-        .padding(8)
-        .background(Color(.mijickBackgroundPrimary50))
-        .mask(Capsule())
+
       }
+      //.scrollIndicators(.hidden)
       .frame(height: 40)
     }
 }}
@@ -59,10 +65,11 @@ fileprivate struct Button: View {
 private extension Button {
     func createButtonLabel() -> some View {
       Text("\(icon)")
+        .font(active ? .title : .caption)
       //Image(icon)
             //.resizable()
-            .frame(width: iconSize, height: iconSize)
-            .foregroundColor(iconColor)
+            //.frame(width: iconSize, height: iconSize)
+            //.foregroundColor(iconColor)
             .padding(8)
             .background(Color(.mijickBackgroundSecondary))
             .mask(Circle())
