@@ -22,6 +22,7 @@ extension DefaultCameraScreen { struct CameraFilterSwitch: View {
         .background(Color(.mijickBackgroundPrimary50))
         .mask(Capsule())
       }
+      .frame(height: 40)
     }
 }}
 private extension DefaultCameraScreen.CameraFilterSwitch {
