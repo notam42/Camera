@@ -74,10 +74,14 @@ extension CameraManagerPhotoOutput: @preconcurrency AVCapturePhotoCaptureDelegat
               let appliedFilter = selectedFilter != .none ? selectedFilter : nil
               let currentIntensity = parent.attributes.filterIntensity
       
+      // ENSURE both images exist - use originalUIImage as fallback
+              let finalOriginalImage = originalUIImage
+              let finalFilteredImage = filteredUIImage ?? originalUIImage
+      
       // Create media with both versions
       guard let capturedMedia = MCameraMedia(
-                  originalImage: originalUIImage,
-                  filteredImage: filteredUIImage,
+                  originalImage: finalOriginalImage,
+                  filteredImage: finalFilteredImage,
                   appliedFilter: appliedFilter,
                   filterIntensity: currentIntensity
               ) else { return }
