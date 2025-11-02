@@ -306,8 +306,9 @@ public extension MCamera {
      struct ContentView: View {
         var body: some View {
             MCamera()
-                .onImageCaptured { image, controller in
-                    saveImageInGallery(image)
+                .onImageCaptured { originalImage, filterNames, controller in
+                    print("Original image received with filters: \(filterNames)")
+                    saveImageForEditing(originalImage, appliedFilters: filterNames)
                     controller.reopenCameraScreen()
                 }
 
@@ -317,7 +318,7 @@ public extension MCamera {
      }
      ```
      */
-    func onImageCaptured(_ action: @escaping (UIImage, MCamera.Controller) -> ()) -> Self { config.imageCapturedAction = action; return self }
+    func onImageCaptured(_ action: @escaping (UIImage, [String], MCamera.Controller) -> ()) -> Self { config.imageCapturedAction = action; return self }
 
     /**
      Defines action that is called when a video is captured.

@@ -60,10 +60,32 @@ extension CameraManagerPhotoOutput: @preconcurrency AVCapturePhotoCaptureDelegat
               let ciImage = CIImage(data: imageData)
         else { return }
 
+      // Process original image (without filters)
+              let originalCGImage = prepareCGImage(ciImage)
+              let originalUIImage = prepareUIImage(originalCGImage)
+      
+      // Process filtered image (with filters applied)
+      let filteredCIImage = prepareCIImage(ciImage, parent.attributes.cameraFilters)
+              let filteredCGImage = prepareCGImage(filteredCIImage)
+              let filteredUIImage = prepareUIImage(filteredCGImage)
+      
+      // Get filter names
+              let filterNames = parent.attributes.cameraFilters.compactMap { $0.name }
+      
+      // Create media with both versions
+              guard let capturedMedia = MCameraMedia(
+                  originalImage: originalUIImage,
+                  filteredImage: filteredUIImage,
+                  appliedFilterNames: filterNames
+              ) else { return }
+      
+      
+      /*
         let capturedCIImage = prepareCIImage(ciImage, parent.attributes.cameraFilters)
         let capturedCGImage = prepareCGImage(capturedCIImage)
         let capturedUIImage = prepareUIImage(capturedCGImage)
         let capturedMedia = MCameraMedia(data: capturedUIImage)
+       */
 
         parent.setCapturedMedia(capturedMedia)
     }

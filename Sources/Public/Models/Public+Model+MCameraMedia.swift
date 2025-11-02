@@ -22,4 +22,10 @@ public extension MCameraMedia {
      Gets the video URL from the media object.
      */
     func getVideo() -> URL? { video }
+  
+    
+  func getOriginalImage() -> UIImage? { originalImage }
+    
+  
+    func getAppliedFilterNames() -> [String] { appliedFilterNames }
 }

@@ -15,7 +15,7 @@ extension DefaultCameraScreen { struct CameraFilterSwitch: View {
     var body: some View {
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 4) {
-          ForEach(CameraFilter.allCases, id: \.self) { filter in
+          ForEach(CameraFilter.allCases) { filter in
             createFilterTypeButton(filter: filter)
           }
             
@@ -42,36 +42,12 @@ private extension DefaultCameraScreen.CameraFilterSwitch {
 }
 
 private extension DefaultCameraScreen.CameraFilterSwitch {
-  /*
-    func isFilterTypeButtonActive(filters: [CIFilter]) -> Bool {
-      filters == parent.cameraFilters
-    }
-   */
-//  func isFilterTypeButtonActive(filters: [CIFilter]) -> Bool {
-//      // Find which CameraFilter produces the given filters array
-//      let currentFilter = CameraFilter.allCases.first { cameraFilter in
-//          cameraFilter.filters.count == filters.count &&
-//          zip(cameraFilter.filters, filters).allSatisfy { filter1, filter2 in
-//              filter1.name == filter2.name
-//          }
-//      }
-//      
-//      let parentFilter = CameraFilter.allCases.first { cameraFilter in
-//          cameraFilter.filters.count == parent.cameraFilters.count &&
-//          zip(cameraFilter.filters, parent.cameraFilters).allSatisfy { filter1, filter2 in
-//              filter1.name == filter2.name
-//          }
-//      }
-//      
-//      return currentFilter?.id == parentFilter?.id
-//  }
-  
   func isFilterTypeButtonActive(filters: [CIFilter]) -> Bool {
-          // Compare filter arrays by their names since CIFilter doesn't conform to Equatable
-          let filterNames = filters.map { $0.name }
-          let currentFilterNames = parent.cameraFilters.map { $0.name }
-          return filterNames == currentFilterNames
-      }
+        // Compare filter arrays by their names since CIFilter doesn't conform to Equatable
+        let filterNames = filters.map { $0.name }
+        let currentFilterNames = parent.cameraFilters.map { $0.name }
+        return filterNames == currentFilterNames
+    }
 }
 
 
