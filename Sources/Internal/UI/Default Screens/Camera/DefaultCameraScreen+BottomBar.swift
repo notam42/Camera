@@ -17,12 +17,16 @@ extension DefaultCameraScreen { struct BottomBar: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-          VStack(spacing: 8) {
-            if shouldShowFilterIntensitySlider {
-              createFilterIntensitySlider()
-            }
-            createFilterTypeSwitch()
+          if shouldShowFilterIntensitySlider {
+            createFilterIntensitySlider()
+              .offset(y: shouldShowFilterIntensitySlider ? -136 : -80) // Above filter selector
+              .transition(.opacity.combined(with: .move(edge: .bottom)))
+              .animation(.easeInOut(duration: 0.3), value: shouldShowFilterIntensitySlider)
           }
+
+
+          createFilterTypeSwitch()
+
           createButtons()
         }
         .frame(maxWidth: .infinity)
@@ -67,7 +71,8 @@ private extension DefaultCameraScreen.BottomBar {
       .padding(.vertical, 8)
       .background(Color.black.opacity(0.3))
       .cornerRadius(12)
-      .transition(.opacity.combined(with: .move(edge: .bottom)))
+      .frame(maxWidth: .infinity)
+    //.transition(.opacity.combined(with: .move(edge: .bottom)))
   }
   
   
