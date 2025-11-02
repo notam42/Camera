@@ -27,6 +27,7 @@ enum CameraFilter: String, CaseIterable, Identifiable {
     case cinemaScope = "CinemaScope"
     
     // Fun Modern Filters
+    case psychedelicSwirl = "Psychedelic"
     case vibrant = "Vibrant"
     case dreamy = "Dreamy"
     case sunset = "Sunset"
@@ -46,6 +47,7 @@ enum CameraFilter: String, CaseIterable, Identifiable {
         case .polaroid: return "🖼️"
         case .blackAndWhiteFilm: return "⬛"
         case .cinemaScope: return "🎬"
+        case .psychedelicSwirl: return "🌀"
         case .vibrant: return "🌈"
         case .dreamy: return "✨"
         case .sunset: return "🌅"
@@ -68,6 +70,8 @@ enum CameraFilter: String, CaseIterable, Identifiable {
             return blackAndWhiteFilmFilters()
         case .cinemaScope:
             return cinemaScopeFilters()
+        case .psychedelicSwirl:
+          return psychedelicSwirlFilters()
         case .vibrant:
             return vibrantFilters()
         case .dreamy:
@@ -184,6 +188,58 @@ enum CameraFilter: String, CaseIterable, Identifiable {
     }
     
     // MARK: - Fun Modern Filter Configurations
+  
+  private func psychedelicSwirlFilters() -> [CIFilter] {
+          var filters: [CIFilter] = []
+          
+          // Extreme saturation boost
+          if let colorControls = CIFilter(name: "CIColorControls") {
+              colorControls.setValue(2.0, forKey: kCIInputSaturationKey)
+              colorControls.setValue(1.4, forKey: kCIInputContrastKey)
+              colorControls.setValue(0.1, forKey: kCIInputBrightnessKey)
+              filters.append(colorControls)
+          }
+          
+          // Twirl distortion for swirl effect
+          if let twirl = CIFilter(name: "CITwirlDistortion") {
+              twirl.setValue(CIVector(x: 0, y: 0), forKey: kCIInputCenterKey)
+              twirl.setValue(300, forKey: kCIInputRadiusKey)
+              twirl.setValue(3.14, forKey: "inputAngle")
+              filters.append(twirl)
+          }
+          
+          // Posterize for striped paint effect
+          if let posterize = CIFilter(name: "CIColorPosterize") {
+              posterize.setValue(8, forKey: "inputLevels")
+              filters.append(posterize)
+          }
+          
+          // Color curves adjustment for vibrant tones
+          if let colorMatrix = CIFilter(name: "CIColorMatrix") {
+              colorMatrix.setValue(CIVector(x: 1.3, y: 0, z: 0, w: 0), forKey: "inputRVector")
+              colorMatrix.setValue(CIVector(x: 0, y: 1.3, z: 0, w: 0), forKey: "inputGVector")
+              colorMatrix.setValue(CIVector(x: 0, y: 0, z: 1.3, w: 0), forKey: "inputBVector")
+              filters.append(colorMatrix)
+          }
+          
+          // Crystallize for texture
+          if let crystallize = CIFilter(name: "CICrystallize") {
+              crystallize.setValue(8, forKey: kCIInputRadiusKey)
+              filters.append(crystallize)
+          }
+          
+          // Edge work for line definition
+          if let edges = CIFilter(name: "CILineOverlay") {
+              edges.setValue(7.0, forKey: "inputNRNoiseLevel")
+              edges.setValue(0.71, forKey: "inputNRSharpness")
+              edges.setValue(0.5, forKey: "inputEdgeIntensity")
+              edges.setValue(0.1, forKey: "inputThreshold")
+              edges.setValue(1.0, forKey: "inputContrast")
+              filters.append(edges)
+          }
+          
+          return filters
+      }
     
     private func vibrantFilters() -> [CIFilter] {
         var filters: [CIFilter] = []
