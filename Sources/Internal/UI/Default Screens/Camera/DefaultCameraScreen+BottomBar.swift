@@ -17,10 +17,13 @@ extension DefaultCameraScreen { struct BottomBar: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            //createOutputTypeSwitch()
-          createFilterTypeSwitch()
-          
-            createButtons()
+          VStack(spacing: 8) {
+            if shouldShowFilterIntensitySlider {
+              createFilterIntensitySlider()
+            }
+            createFilterTypeSwitch()
+          }
+          createButtons()
         }
         .frame(maxWidth: .infinity)
         .padding(.bottom, 44)
@@ -29,6 +32,46 @@ extension DefaultCameraScreen { struct BottomBar: View {
 }}
 
 private extension DefaultCameraScreen.BottomBar {
+  var shouldShowFilterIntensitySlider: Bool {
+    isFilterTypeSwitchActive && !parent.cameraFilters.isEmpty
+  }
+  
+  @ViewBuilder func createFilterIntensitySlider() -> some View {
+      VStack(spacing: 4) {
+          HStack {
+              Text("0%")
+                  .font(.caption2)
+                  .foregroundColor(.secondary)
+              
+              Spacer()
+              
+              Text("\(Int(parent.filterIntensity))%")
+                  .font(.caption)
+                  .fontWeight(.medium)
+                  .foregroundColor(.primary)
+              
+              Spacer()
+              
+              Text("100%")
+                  .font(.caption2)
+                  .foregroundColor(.secondary)
+          }
+          
+          Slider(value: Binding(
+              get: { parent.filterIntensity },
+              set: { parent.setFilterIntensity($0) }
+          ), in: 0...100, step: 1)
+          .accentColor(.yellow)
+      }
+      .padding(.horizontal, 16)
+      .padding(.vertical, 8)
+      .background(Color.black.opacity(0.3))
+      .cornerRadius(12)
+      .transition(.opacity.combined(with: .move(edge: .bottom)))
+  }
+  
+  
+  
     @ViewBuilder func createFilterTypeSwitch() -> some View { if isFilterTypeSwitchActive {
         DefaultCameraScreen.CameraFilterSwitch(parent: parent)
             .offset(y: -80)

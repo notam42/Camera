@@ -277,6 +277,15 @@ extension CameraManager {
     }
 }
 
+// MARK: Set Filter Intensity
+extension CameraManager {
+    func setFilterIntensity(_ intensity: Double) {
+        let clampedIntensity = max(0.0, min(100.0, intensity))
+        guard clampedIntensity != attributes.filterIntensity, !isChanging else { return }
+        attributes.filterIntensity = clampedIntensity
+    }
+}
+
 // MARK: Set Exposure Mode
 extension CameraManager {
     func setExposureMode(_ exposureMode: AVCaptureDevice.ExposureMode) throws {

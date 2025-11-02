@@ -54,4 +54,10 @@ extension DefaultCameraScreen {
         case true: deviceOrientation.getAngle()
         case false: .zero
     }}
+  
+  var filterIntensity: Double { cameraManager.attributes.filterIntensity }
+      
+      func setFilterIntensity(_ intensity: Double) {
+          cameraManager.setFilterIntensity(intensity)
+      }
 }

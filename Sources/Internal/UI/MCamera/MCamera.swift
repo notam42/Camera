@@ -154,7 +154,8 @@ private extension MCamera {
   func notifyUserOfMediaCaptured(_ capturedMedia: MCameraMedia) {
           if let originalImage = capturedMedia.getOriginalImage() {
               let filterNames = capturedMedia.getAppliedFilterNames()
-              config.imageCapturedAction(originalImage, filterNames, .init(mCamera: self))
+            let intensity = capturedMedia.getFilterIntensity()
+              config.imageCapturedAction(originalImage, filterNames, intensity, .init(mCamera: self))
           }
           else if let video = capturedMedia.getVideo() {
               config.videoCapturedAction(video, .init(mCamera: self))

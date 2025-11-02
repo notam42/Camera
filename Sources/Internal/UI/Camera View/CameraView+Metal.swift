@@ -190,7 +190,7 @@ private extension CameraMetalView {
         return currentFrame.oriented(parent.attributes.frameOrientation)
     }
     func applyingFiltersToCurrentFrame(_ currentFrame: CIImage) -> CIImage {
-        currentFrame.applyingFilters(parent.attributes.cameraFilters)
+        currentFrame.applyingFilters(parent.attributes.cameraFilters, intensity: parent.attributes.filterIntensity)
     }
     func redrawCameraView(_ frame: CIImage) {
         currentFrame = frame

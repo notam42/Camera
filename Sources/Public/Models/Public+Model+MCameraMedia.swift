@@ -13,19 +13,19 @@ import SwiftUI
 
 // MARK: Getters
 public extension MCameraMedia {
-    /**
-     Gets the image from the media object.
-     */
-    func getImage() -> UIImage? { image }
+  /**
+  Gets the image from the media object.
+  */
+  func getImage() -> UIImage? { image }
 
-    /**
-     Gets the video URL from the media object.
-     */
-    func getVideo() -> URL? { video }
-  
+  /**
+  Gets the video URL from the media object.
+  */
+  func getVideo() -> URL? { video }
     
   func getOriginalImage() -> UIImage? { originalImage }
-    
   
-    func getAppliedFilterNames() -> [String] { appliedFilterNames }
+  func getAppliedFilterNames() -> [String] { appliedFilterNames }
+  
+  func getFilterIntensity() -> Double { filterIntensity }
 }

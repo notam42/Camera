@@ -64,19 +64,21 @@ extension CameraManagerPhotoOutput: @preconcurrency AVCapturePhotoCaptureDelegat
               let originalCGImage = prepareCGImage(ciImage)
               let originalUIImage = prepareUIImage(originalCGImage)
       
-      // Process filtered image (with filters applied)
+      // Process filtered image (with filters applied at current intensity)
       let filteredCIImage = prepareCIImage(ciImage, parent.attributes.cameraFilters)
               let filteredCGImage = prepareCGImage(filteredCIImage)
               let filteredUIImage = prepareUIImage(filteredCGImage)
       
       // Get filter names
               let filterNames = parent.attributes.cameraFilters.compactMap { $0.name }
+      let currentIntensity = parent.attributes.filterIntensity
       
       // Create media with both versions
-              guard let capturedMedia = MCameraMedia(
+      guard let capturedMedia = MCameraMedia(
                   originalImage: originalUIImage,
                   filteredImage: filteredUIImage,
-                  appliedFilterNames: filterNames
+                  appliedFilterNames: filterNames,
+                  filterIntensity: currentIntensity
               ) else { return }
       
       
@@ -92,7 +94,7 @@ extension CameraManagerPhotoOutput: @preconcurrency AVCapturePhotoCaptureDelegat
 }
 private extension CameraManagerPhotoOutput {
     func prepareCIImage(_ ciImage: CIImage, _ filters: [CIFilter]) -> CIImage {
-        ciImage.applyingFilters(filters)
+        ciImage.applyingFilters(filters, intensity: parent.attributes.filterIntensity)
     }
     func prepareCGImage(_ ciImage: CIImage) -> CGImage? {
         CIContext().createCGImage(ciImage, from: ciImage.extent)
