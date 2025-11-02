@@ -19,7 +19,7 @@ extension DefaultCameraScreen { struct BottomBar: View {
         ZStack(alignment: .top) {
           if shouldShowFilterIntensitySlider {
             createFilterIntensitySlider()
-              .offset(y: shouldShowFilterIntensitySlider ? -136 : -80) // Above filter selector
+              .offset(y: shouldShowFilterIntensitySlider ? -156 : -80) // Above filter selector
               .transition(.opacity.combined(with: .move(edge: .bottom)))
               .animation(.easeInOut(duration: 0.3), value: shouldShowFilterIntensitySlider)
           }
