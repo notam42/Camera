@@ -31,7 +31,10 @@ extension DefaultCameraScreen { struct CameraFilterSwitch: View {
 }}
 private extension DefaultCameraScreen.CameraFilterSwitch {
   func createFilterTypeButton(filter: CameraFilter) -> some View {
-    Button(icon: filter.icon, active: isFilterTypeButtonActive(filters: filter.filters)) {
+    Button(
+      icon: filter.icon,
+      active: isFilterTypeButtonActive(filters: filter.filters)
+    ) {
           parent.setCameraFilters(filter.filters)
         }
         .rotationEffect(parent.iconAngle)
@@ -39,13 +42,36 @@ private extension DefaultCameraScreen.CameraFilterSwitch {
 }
 
 private extension DefaultCameraScreen.CameraFilterSwitch {
-//    func getFilterTypeButtonIcon(_ filter: CameraFilter) -> ImageResource { switch outputType {
-//        case .photo: return .mijickIconPhoto
-//        case .video: return .mijickIconVideo
-//    }}
+  /*
     func isFilterTypeButtonActive(filters: [CIFilter]) -> Bool {
       filters == parent.cameraFilters
     }
+   */
+//  func isFilterTypeButtonActive(filters: [CIFilter]) -> Bool {
+//      // Find which CameraFilter produces the given filters array
+//      let currentFilter = CameraFilter.allCases.first { cameraFilter in
+//          cameraFilter.filters.count == filters.count &&
+//          zip(cameraFilter.filters, filters).allSatisfy { filter1, filter2 in
+//              filter1.name == filter2.name
+//          }
+//      }
+//      
+//      let parentFilter = CameraFilter.allCases.first { cameraFilter in
+//          cameraFilter.filters.count == parent.cameraFilters.count &&
+//          zip(cameraFilter.filters, parent.cameraFilters).allSatisfy { filter1, filter2 in
+//              filter1.name == filter2.name
+//          }
+//      }
+//      
+//      return currentFilter?.id == parentFilter?.id
+//  }
+  
+  func isFilterTypeButtonActive(filters: [CIFilter]) -> Bool {
+          // Compare filter arrays by their names since CIFilter doesn't conform to Equatable
+          let filterNames = filters.map { $0.name }
+          let currentFilterNames = parent.cameraFilters.map { $0.name }
+          return filterNames == currentFilterNames
+      }
 }
 
 
@@ -55,9 +81,12 @@ fileprivate struct Button: View {
     let active: Bool
     let action: () -> ()
 
-
     var body: some View {
-        SwiftUI.Button(action: action, label: createButtonLabel).buttonStyle(ButtonScaleStyle())
+      SwiftUI.Button(
+        action: action,
+        label: createButtonLabel
+      )
+      .buttonStyle(ButtonScaleStyle())
     }
 }
 private extension Button {
