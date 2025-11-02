@@ -60,4 +60,12 @@ extension DefaultCameraScreen {
       func setFilterIntensity(_ intensity: Double) {
           cameraManager.setFilterIntensity(intensity)
       }
+  
+  var selectedCameraFilter: CameraFilter {
+          cameraManager.attributes.selectedCameraFilter
+      }
+      
+    func setSelectedCameraFilter(_ filter: CameraFilter) {
+        cameraManager.setSelectedCameraFilter(filter)
+    }
 }

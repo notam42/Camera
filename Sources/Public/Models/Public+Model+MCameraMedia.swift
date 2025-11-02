@@ -25,7 +25,7 @@ public extension MCameraMedia {
     
   func getOriginalImage() -> UIImage? { originalImage }
   
-  func getAppliedFilterNames() -> [String] { appliedFilterNames }
+  func getAppliedFilter() -> CameraFilter? { appliedFilter }
   
   func getFilterIntensity() -> Double { filterIntensity }
 }

@@ -26,6 +26,7 @@ struct CameraManagerAttributes {
     var cameraExposure: CameraExposure = .init()
     var hdrMode: CameraHDRMode = .auto
     var cameraFilters: [CIFilter] = []
+    var selectedCameraFilter: CameraFilter = .none
     var filterIntensity: Double = 100.0  // 0.0 to 100.0
     var mirrorOutput: Bool = false
     var isGridVisible: Bool = true

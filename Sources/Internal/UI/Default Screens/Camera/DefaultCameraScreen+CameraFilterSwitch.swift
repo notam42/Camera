@@ -33,20 +33,20 @@ private extension DefaultCameraScreen.CameraFilterSwitch {
   func createFilterTypeButton(filter: CameraFilter) -> some View {
     Button(
       icon: filter.icon,
-      active: isFilterTypeButtonActive(filters: filter.filters)
+      active: isFilterTypeButtonActive(filter: filter)
     ) {
-          parent.setCameraFilters(filter.filters)
+          parent.setSelectedCameraFilter(filter)
         }
         .rotationEffect(parent.iconAngle)
     }
 }
 
 private extension DefaultCameraScreen.CameraFilterSwitch {
-  func isFilterTypeButtonActive(filters: [CIFilter]) -> Bool {
+  func isFilterTypeButtonActive(filter: CameraFilter) -> Bool {
         // Compare filter arrays by their names since CIFilter doesn't conform to Equatable
-        let filterNames = filters.map { $0.name }
-        let currentFilterNames = parent.cameraFilters.map { $0.name }
-        return filterNames == currentFilterNames
+//        let filterNames = filters.map { $0.name }
+//        let currentFilterNames = parent.cameraFilters.map { $0.name }
+    return filter == parent.selectedCameraFilter
     }
 }
 

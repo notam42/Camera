@@ -69,15 +69,16 @@ extension CameraManagerPhotoOutput: @preconcurrency AVCapturePhotoCaptureDelegat
               let filteredCGImage = prepareCGImage(filteredCIImage)
               let filteredUIImage = prepareUIImage(filteredCGImage)
       
-      // Get filter names
-              let filterNames = parent.attributes.cameraFilters.compactMap { $0.name }
-      let currentIntensity = parent.attributes.filterIntensity
+      // CHANGE: Pass the enum directly
+              let selectedFilter = parent.attributes.selectedCameraFilter
+              let appliedFilter = selectedFilter != .none ? selectedFilter : nil
+              let currentIntensity = parent.attributes.filterIntensity
       
       // Create media with both versions
       guard let capturedMedia = MCameraMedia(
                   originalImage: originalUIImage,
                   filteredImage: filteredUIImage,
-                  appliedFilterNames: filterNames,
+                  appliedFilter: appliedFilter,
                   filterIntensity: currentIntensity
               ) else { return }
       

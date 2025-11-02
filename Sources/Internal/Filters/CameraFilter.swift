@@ -17,7 +17,7 @@
 import CoreImage
 import UIKit
 
-enum CameraFilter: String, CaseIterable, Identifiable {
+public enum CameraFilter: String, CaseIterable, Identifiable, Codable, Sendable {
     // No Filter
     case none = "Original"
     // Analog Photography Filters
@@ -38,9 +38,9 @@ enum CameraFilter: String, CaseIterable, Identifiable {
   
   /// Unique identifier for each filter
       
-  var id: String { rawValue }
+  public var id: String { rawValue }
     
-    var icon: String {
+  public var icon: String {
         switch self {
         case .none: return "0"
         case .vintageFilm: return "📷"
@@ -58,7 +58,7 @@ enum CameraFilter: String, CaseIterable, Identifiable {
         }
     }
     
-    var filters: [CIFilter] {
+  public var filters: [CIFilter] {
         switch self {
         case .none:
           return []

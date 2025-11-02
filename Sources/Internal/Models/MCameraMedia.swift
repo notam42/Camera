@@ -17,7 +17,7 @@ public struct MCameraMedia: Sendable {
   
   // New properties for filter support
     let originalImage: UIImage?
-    let appliedFilterNames: [String]
+    let appliedFilter: CameraFilter?
   let filterIntensity: Double
 
     init?(data: Any?) {
@@ -25,25 +25,25 @@ public struct MCameraMedia: Sendable {
         self.image = image
         self.video = nil
         self.originalImage = nil
-        self.appliedFilterNames = []
+        self.appliedFilter = nil
         self.filterIntensity = 100
       }
       else if let video = data as? URL {
         self.video = video
         self.image = nil
         self.originalImage = nil
-        self.appliedFilterNames = []
+        self.appliedFilter = nil
         self.filterIntensity = 100.0
       }
         else { return nil }
     }
   
   // New initializer for images with filter support
-  init?(originalImage: UIImage?, filteredImage: UIImage?, appliedFilterNames: [String] = [], filterIntensity: Double = 100.0) {
+  init?(originalImage: UIImage?, filteredImage: UIImage?, appliedFilter: CameraFilter? = nil, filterIntensity: Double = 100.0) {
       self.originalImage = originalImage
       self.image = filteredImage
       self.video = nil
-      self.appliedFilterNames = appliedFilterNames
+      self.appliedFilter = appliedFilter
     self.filterIntensity = filterIntensity
   }
   
@@ -52,7 +52,7 @@ public struct MCameraMedia: Sendable {
       self.video = videoURL
       self.image = nil
       self.originalImage = nil
-      self.appliedFilterNames = []
+      self.appliedFilter = nil
     self.filterIntensity = 100.0
   }
 }
@@ -63,7 +63,7 @@ extension MCameraMedia: Equatable {
     lhs.image == rhs.image &&
     lhs.video == rhs.video &&
     lhs.originalImage == rhs.originalImage &&
-    lhs.appliedFilterNames == rhs.appliedFilterNames &&
+    lhs.appliedFilter == rhs.appliedFilter &&
     lhs.filterIntensity == rhs.filterIntensity
   }
 }

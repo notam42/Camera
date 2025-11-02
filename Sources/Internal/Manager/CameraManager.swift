@@ -277,6 +277,14 @@ extension CameraManager {
     }
 }
 
+extension CameraManager {
+  func setSelectedCameraFilter(_ filter: CameraFilter) {
+    guard filter != attributes.selectedCameraFilter, !isChanging else { return }
+    attributes.selectedCameraFilter = filter
+    attributes.cameraFilters = filter.filters
+  }
+}
+
 // MARK: Set Filter Intensity
 extension CameraManager {
     func setFilterIntensity(_ intensity: Double) {
