@@ -42,24 +42,24 @@ private extension DefaultCameraScreen.BottomBar {
   
   @ViewBuilder func createFilterIntensitySlider() -> some View {
       VStack(spacing: 4) {
-          HStack {
-              Text("0%")
-                  .font(.caption2)
-                  .foregroundColor(.secondary)
-              
-              Spacer()
-              
-              Text("\(Int(parent.filterIntensity))%")
-                  .font(.caption)
-                  .fontWeight(.medium)
-                  .foregroundColor(.primary)
-              
-              Spacer()
-              
-              Text("100%")
-                  .font(.caption2)
-                  .foregroundColor(.secondary)
-          }
+//          HStack {
+//              Text("0%")
+//                  .font(.caption2)
+//                  .foregroundColor(.secondary)
+//              
+//              Spacer()
+//              
+//              Text("\(Int(parent.filterIntensity))%")
+//                  .font(.caption)
+//                  .fontWeight(.medium)
+//                  .foregroundColor(.primary)
+//
+//              Spacer()
+//              
+//              Text("100%")
+//                  .font(.caption2)
+//                  .foregroundColor(.secondary)
+//          }
           
           Slider(value: Binding(
               get: { parent.filterIntensity },

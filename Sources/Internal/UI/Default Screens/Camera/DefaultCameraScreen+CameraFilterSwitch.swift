@@ -74,6 +74,7 @@ private extension Button {
             .frame(width: iconSize, height: iconSize)
             .padding(8)
             .background(active ? Color.yellow.opacity(0.3) : Color.clear)
+            .border(active ? .white : .clear, width: 4.0)
             //.background(Color(.mijickBackgroundSecondary))
             
             //.mask(Circle())
@@ -88,4 +89,22 @@ private extension Button {
         case true: .init(.mijickBackgroundYellow)
         case false: .init(.mijickTextTertiary)
     }}
+}
+
+#Preview {
+  ZStack {
+    Color.yellow
+    Text("Hi")
+      .font(.title)
+    //Image(icon)
+          //.resizable()
+          .frame(width: 36, height: 36)
+          .padding(8)
+          .border(.white, width: 4.0)
+          //.background(active ? Color.yellow.opacity(0.3) : Color.clear)
+          //.background(Color(.mijickBackgroundSecondary))
+          
+          //.mask(Circle())
+  }
+  
 }
