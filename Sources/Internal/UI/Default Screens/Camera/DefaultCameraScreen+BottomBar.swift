@@ -77,7 +77,7 @@ private extension DefaultCameraScreen.BottomBar {
   
   
   
-    @ViewBuilder func createFilterTypeSwitch() -> some View { if isFilterTypeSwitchActive {
+    @ViewBuilder func createFilterTypeSwitch() -> some View { if isFilterPaneVisible && isFilterTypeSwitchActive {
         DefaultCameraScreen.CameraFilterSwitch(parent: parent)
             .offset(y: -80)
     }}
