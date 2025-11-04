@@ -13,7 +13,7 @@ import SwiftUI
 
 extension DefaultCameraScreen { struct BottomBar: View {
     let parent: DefaultCameraScreen
-
+  @State private var isFilterPaneVisible = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -37,7 +37,7 @@ extension DefaultCameraScreen { struct BottomBar: View {
 
 private extension DefaultCameraScreen.BottomBar {
   var shouldShowFilterIntensitySlider: Bool {
-    isFilterTypeSwitchActive && !parent.cameraFilters.isEmpty
+    isFilterPaneVisible && isFilterTypeSwitchActive && !parent.cameraFilters.isEmpty
   }
   
   @ViewBuilder func createFilterIntensitySlider() -> some View {
@@ -105,15 +105,42 @@ private extension DefaultCameraScreen.BottomBar {
 //}
 private extension DefaultCameraScreen.BottomBar {
     @ViewBuilder func createLightButton() -> some View { if isLightButtonActive {
-        BottomButton(
-            icon: .mijickIconLight,
-            iconColor: lightButtonIconColor,
-            backgroundColor: .init(.mijickBackgroundSecondary),
-            rotationAngle: parent.iconAngle,
-            action: changeLightMode
-        )
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .transition(.scale)
+      if parent.config.cameraFilterSwitchAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording {
+          Button {
+            withAnimation(.easeInOut) { isFilterPaneVisible.toggle() }
+          } label: {
+            Image(systemName: "camera.filters")
+              .font(.system(size: 20, weight: .semibold))
+              .foregroundColor(isFilterPaneVisible ? .yellow : .white) // or match theme
+              .rotationEffect(parent.iconAngle)
+              .frame(width: 52, height: 52)
+              .background(Color(.mijickBackgroundSecondary))
+              .cornerRadius(26)
+              .mask(Circle())
+              
+            
+            /*
+             .resizable()
+             .frame(width: 26, height: 26)
+             .foregroundColor(iconColor)
+             .rotationEffect(rotationAngle)
+             .frame(width: 52, height: 52)
+             .background(backgroundColor)
+             .mask(Circle())
+             */
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .transition(.scale)
+        }
+//        BottomButton(
+//            icon: .mijickIconLight,
+//            iconColor: lightButtonIconColor,
+//            backgroundColor: .init(.mijickBackgroundSecondary),
+//            rotationAngle: parent.iconAngle,
+//            action: changeLightMode
+//        )
+//        .frame(maxWidth: .infinity, alignment: .leading)
+//        .transition(.scale)
     }}
     @ViewBuilder func createCaptureButton() -> some View { if isCaptureButtonActive {
         DefaultCameraScreen.CaptureButton(
