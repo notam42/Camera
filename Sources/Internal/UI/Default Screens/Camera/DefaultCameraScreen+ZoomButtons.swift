@@ -102,6 +102,11 @@ private extension DefaultCameraScreen.ZoomButtons {
 //        if device.maxAvailableVideoZoomFactor >= 5.0 {
 //            factors.append(5.0)
 //        }
+      
+      print("🎯 ZoomButtons Debug:")
+          print("   Current UI zoomFactor: \(parent.cameraManager.attributes.zoomFactor)")
+          print("   Current device videoZoomFactor: \(device.videoZoomFactor)")
+      
       availableZoomFactors = DeviceCapabilities.getAvailableZoomFactors(for: device)
         //availableZoomFactors = factors
     }
