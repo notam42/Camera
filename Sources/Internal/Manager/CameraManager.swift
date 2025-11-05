@@ -212,13 +212,24 @@ extension CameraManager {
   }
   
   private func convertLogicalToPhysicalZoom(_ logicalZoom: CGFloat) -> CGFloat {
-      // If we have ultra-wide and user wants 0.5x, set device to 1.0 (which is actually ultra-wide)
-      if DeviceCapabilities.hasUltraWideCamera() && logicalZoom == 0.5 {
-          return 1.0
-      }
-      
-      // For other zoom levels, use the logical zoom directly
-      return logicalZoom
+    // Only do conversion for multi-camera devices with ultra-wide
+        guard DeviceCapabilities.hasUltraWideCamera() else {
+            return logicalZoom
+        }
+        
+        // Simple test mapping - adjust these values based on what works
+        switch logicalZoom {
+        case 0.5:
+            return 1.0  // Ultra-wide
+        case 1.0:
+            return 2.0  // Try 2.0 first, adjust if needed
+        case 2.0:
+            return 4.0  // Try 4.0 first, adjust if needed
+        case 3.0:
+            return 6.0  // Try 6.0 first, adjust if needed
+        default:
+            return logicalZoom * 2.0  // Default scaling
+        }
   }
 }
 private extension CameraManager {
