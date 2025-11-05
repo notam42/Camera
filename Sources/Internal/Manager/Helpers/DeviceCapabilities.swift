@@ -11,24 +11,38 @@ import UIKit
 
 struct DeviceCapabilities {
     static func getAvailableZoomFactors(for device: CaptureDevice) -> [CGFloat] {
-        var factors: [CGFloat] = []
-        
-        // Check device model for specific capabilities
-        let deviceModel = UIDevice.current.model
-        let hasUltraWide = device.minAvailableVideoZoomFactor < 1.0
-        let hasTelephoto = device.maxAvailableVideoZoomFactor > 2.0
-        
-        if hasUltraWide {
-            factors.append(0.5)
-        }
-        
-        factors.append(1.0) // Always available
-        
-        if hasTelephoto {
-            factors.append(2.0)
-        }
-        
-        return factors
+      var factors: [CGFloat] = []
+              
+              // Add debugging to see actual values
+              print("🔍 Debug Zoom Detection:")
+              print("   minAvailableVideoZoomFactor: \(device.minAvailableVideoZoomFactor)")
+              print("   maxAvailableVideoZoomFactor: \(device.maxAvailableVideoZoomFactor)")
+              
+              // More precise check for ultra-wide
+              let hasUltraWide = device.minAvailableVideoZoomFactor <= 0.5
+              let hasTelephoto = device.maxAvailableVideoZoomFactor >= 2.0
+              
+              print("   hasUltraWide: \(hasUltraWide)")
+              print("   hasTelephoto: \(hasTelephoto)")
+              
+              if hasUltraWide {
+                  factors.append(0.5)
+              }
+              
+              factors.append(1.0) // Always available
+              
+              if hasTelephoto {
+                  factors.append(2.0)
+              }
+              
+              // Add more zoom levels if available
+              if device.maxAvailableVideoZoomFactor >= 3.0 {
+                  factors.append(3.0)
+              }
+              
+              print("   Final factors: \(factors)")
+              
+              return factors
     }
     
     static var isMultiCameraDevice: Bool {
