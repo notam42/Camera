@@ -14,23 +14,25 @@ extension DefaultCameraScreen {
         let parent: DefaultCameraScreen
         @State private var availableZoomFactors: [CGFloat] = []
         
-        var body: some View {
-            HStack(spacing: 8) {
-                ForEach(availableZoomFactors, id: \.self) { zoomFactor in
-                    createZoomButton(for: zoomFactor)
-                }
+      var body: some View {
+        if DeviceCapabilities.isMultiCameraDevice {
+          HStack(spacing: 8) {
+            ForEach(availableZoomFactors, id: \.self) { zoomFactor in
+              createZoomButton(for: zoomFactor)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color.black.opacity(0.3))
-            .cornerRadius(20)
-            .onAppear {
-                updateAvailableZoomFactors()
-            }
-            .onChange(of: parent.cameraManager.attributes.cameraPosition) { _ in
-                updateAvailableZoomFactors()
-            }
+          }
+          .padding(.horizontal, 16)
+          .padding(.vertical, 8)
+          .background(Color.black.opacity(0.3))
+          .cornerRadius(20)
+          .onAppear {
+            updateAvailableZoomFactors()
+          }
+          .onChange(of: parent.cameraManager.attributes.cameraPosition) { _ in
+            updateAvailableZoomFactors()
+          }
         }
+      }
     }
 }
 
@@ -80,27 +82,27 @@ private extension DefaultCameraScreen.ZoomButtons {
     func updateAvailableZoomFactors() {
         guard let device = parent.cameraManager.getCameraInput()?.device else { return }
         
-        var factors: [CGFloat] = []
-        
-        // Add ultra-wide (0.5x) if available
-        if device.minAvailableVideoZoomFactor <= 0.5 {
-            factors.append(0.5)
-        }
-        
-        // Always add 1x
-        factors.append(1.0)
-        
-        // Add 2x if available
-        if device.maxAvailableVideoZoomFactor >= 2.0 {
-            factors.append(2.0)
-        }
-        
-      
-        // For devices with more zoom capability, add additional levels
-        if device.maxAvailableVideoZoomFactor >= 5.0 {
-            factors.append(5.0)
-        }
-        
-        availableZoomFactors = factors
+//        var factors: [CGFloat] = []
+//        
+//        // Add ultra-wide (0.5x) if available
+//        if device.minAvailableVideoZoomFactor <= 0.5 {
+//            factors.append(0.5)
+//        }
+//        
+//        // Always add 1x
+//        factors.append(1.0)
+//        
+//        // Add 2x if available
+//        if device.maxAvailableVideoZoomFactor >= 2.0 {
+//            factors.append(2.0)
+//        }
+//        
+//      
+//        // For devices with more zoom capability, add additional levels
+//        if device.maxAvailableVideoZoomFactor >= 5.0 {
+//            factors.append(5.0)
+//        }
+      availableZoomFactors = DeviceCapabilities.getAvailableZoomFactors(for: device)
+        //availableZoomFactors = factors
     }
 }
