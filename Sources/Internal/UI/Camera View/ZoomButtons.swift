@@ -18,16 +18,16 @@ struct ZoomButton: View {
         Button(action: action) {
             Text(formatZoomFactor(factor))
                 .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
-                .foregroundColor(isSelected ? .black : Color("mijick-text-primary"))
+                .foregroundColor(isSelected ? .black : Color(.mijickTextPrimary))
                 .frame(width: 44, height: 32)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(isSelected ? Color("mijick-background-yellow") : Color("mijick-background-primary-50"))
+                      .fill(isSelected ? Color(.mijickBackgroundYellow) : Color(.mijickBackgroundPrimary50))
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .strokeBorder(
-                            isSelected ? Color.clear : Color("mijick-background-primary-80").opacity(0.3),
+                          isSelected ? Color.clear : Color(.mijickBackgroundPrimary80).opacity(0.3),
                             lineWidth: 1
                         )
                 )
