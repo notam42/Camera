@@ -23,7 +23,7 @@ public struct DefaultCameraScreen: MCameraScreen {
           
             createContentView()
           createSimpleZoomButtons()
-            .padding(.bottom, 200)
+            .padding(.bottom, 100)
             createTopBar()
             createBottomBar()
         }

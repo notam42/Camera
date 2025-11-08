@@ -95,23 +95,46 @@ private extension CameraManager {
 
         try await startCaptureSession()
         try setupDevice(device)
+        
+        // Set initial zoom to 1.0x BEFORE reading attributes to avoid timing issues
+        setInitialZoomLevel()
+        
+        // Now reset attributes after zoom is properly set
         resetAttributes(device: device)
+        
         cameraMetalView.performCameraEntranceAnimation()
     }}
 }
-private extension CameraManager {
-    func getAudioInput() -> (any CaptureDeviceInput)? {
-        guard attributes.isAudioSourceAvailable,
-              let deviceInput = frontCameraInput ?? backCameraInput
-        else { return nil }
 
-        let captureDeviceInputType = type(of: deviceInput)
-        let audioInput = captureDeviceInputType.get(mediaType: .audio, position: .unspecified)
-        return audioInput
+// MARK: - Initial Camera Setup
+private extension CameraManager {
+    /// Sets the initial zoom level to 1.0x (normal wide camera view) on app startup
+    func setInitialZoomLevel() {
+        guard let device = getCameraInput()?.device else {
+            print("zoom: No device available for initial zoom setup")
+            return
+        }
+        
+        // Set initial zoom to 1.0x (normal wide camera view)
+        let initialLogicalZoom: CGFloat = 1.0
+        
+        // CRITICAL: Set the attributes FIRST to prevent UI flicker
+        attributes.zoomFactor = initialLogicalZoom
+        
+        print("zoom: Setting initial zoom to \(initialLogicalZoom)x")
+        
+        do {
+            // Use the same zoom setting logic as the zoom buttons
+            try performZoomOnDevice(initialLogicalZoom, device: device)
+            
+            print("zoom: Successfully set initial zoom to \(initialLogicalZoom)x")
+        } catch {
+            print("zoom: Failed to set initial zoom: \(error)")
+            // Even if physical zoom setting fails, keep the logical zoom at 1.0x
+        }
     }
-    nonisolated func startCaptureSession() async throws {
-        await captureSession.startRunning()
-    }
+}
+private extension CameraManager {
     func setupDevice(_ device: any CaptureDevice) throws {
         try device.lockForConfiguration()
         device.setExposureMode(attributes.cameraExposure.mode, duration: attributes.cameraExposure.duration, iso: attributes.cameraExposure.iso)
@@ -626,4 +649,29 @@ extension CameraManager {
         case .front: frontCameraInput
         case .back: backCameraInput
     }}
+    
+    /// Gets audio input for video recording if audio is enabled
+    func getAudioInput() -> (any CaptureDeviceInput)? {
+        guard attributes.isAudioSourceAvailable else { return nil }
+        let deviceInputType = type(of: frontCameraInput ?? backCameraInput!)
+        return deviceInputType.get(mediaType: .audio, position: nil)
+    }
+    
+    /// Starts the capture session asynchronously
+    func startCaptureSession() async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            Task { @MainActor in
+                // Access captureSession on main actor to avoid isolation warning
+                let session = self.captureSession
+                
+                // Move to background queue for the actual session start
+                DispatchQueue.global(qos: .userInitiated).async {
+                    session.startRunning()
+                    DispatchQueue.main.async {
+                        continuation.resume()
+                    }
+                }
+            }
+        }
+    }
 }
