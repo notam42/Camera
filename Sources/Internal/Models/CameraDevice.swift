@@ -34,22 +34,26 @@ class CameraDeviceManager: ObservableObject {
     func discoverCameras() {
         var cameras: [CameraDevice] = []
         
-        // Discover all available camera devices
-        let discoverySession = AVCaptureDevice.DiscoverySession(
+        // First, try to find the main virtual multi-camera device (iPhone 11+ back cameras)
+        let virtualDiscoverySession = AVCaptureDevice.DiscoverySession(
             deviceTypes: [
-                .builtInWideAngleCamera,
-                .builtInUltraWideCamera,
-                .builtInTelephotoCamera,
-                .builtInDualCamera,
-                .builtInDualWideCamera,
-                .builtInTripleCamera
+                .builtInTripleCamera,      // iPhone 11 Pro/12 Pro/13 Pro/14 Pro/15 Pro/16 Pro
+                .builtInDualWideCamera,    // iPhone 11/12/13/14/15/16 with ultra-wide + wide
+                .builtInDualCamera         // iPhone 7+/8+/X/XS with wide + telephoto
             ],
             mediaType: .video,
-            position: .back//.unspecified
+            position: .unspecified  // Changed from .back to include front cameras too
         )
         
-        for device in discoverySession.devices {
-            let zoomFactors = calculateZoomFactors(for: device)
+        print("zoom: Found \(virtualDiscoverySession.devices.count) virtual devices")
+        
+        // Add virtual multi-camera devices first (these are the main ones we want)
+        for device in virtualDiscoverySession.devices {
+            print("zoom: Virtual Device - Type: \(device.deviceType.rawValue), Position: \(device.position.rawValue)")
+            print("zoom: Virtual switchover factors: \(device.virtualDeviceSwitchOverVideoZoomFactors)")
+            print("zoom: Constituent devices: \(device.constituentDevices.map { $0.deviceType.rawValue })")
+            
+            let zoomFactors = calculateZoomFactorsForDevice(device)
             let cameraDevice = CameraDevice(
                 device: device,
                 displayName: getCameraDisplayName(device),
@@ -61,11 +65,41 @@ class CameraDeviceManager: ObservableObject {
             cameras.append(cameraDevice)
         }
         
+        // If no virtual devices found, fall back to individual cameras
+        if cameras.isEmpty {
+            print("zoom: No virtual devices found, falling back to individual cameras")
+            let individualDiscoverySession = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [
+                    .builtInWideAngleCamera,
+                    .builtInUltraWideCamera,
+                    .builtInTelephotoCamera
+                ],
+                mediaType: .video,
+                position: .unspecified
+            )
+            
+            for device in individualDiscoverySession.devices {
+                print("zoom: Individual Device - Type: \(device.deviceType.rawValue), Position: \(device.position.rawValue)")
+                
+                let zoomFactors = calculateZoomFactorsForDevice(device)
+                let cameraDevice = CameraDevice(
+                    device: device,
+                    displayName: getCameraDisplayName(device),
+                    zoomFactors: zoomFactors,
+                    minZoom: device.minAvailableVideoZoomFactor,
+                    maxZoom: device.maxAvailableVideoZoomFactor,
+                    position: device.position
+                )
+                cameras.append(cameraDevice)
+            }
+        }
+        
         availableCameras = cameras
         
         // Set current camera to back camera if available
         if let backCamera = cameras.first(where: { $0.position == .back }) {
             currentCamera = backCamera
+            print("zoom: Set current camera to: \(backCamera.displayName) with zoom factors: \(backCamera.zoomFactors)")
         }
     }
     
@@ -91,6 +125,7 @@ class CameraDeviceManager: ObservableObject {
         // Start with base zoom factor of 1
         let zoomFactors = [1.0] + device.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat($0.floatValue) }
         print("zoom: zoomFactors: \(zoomFactors)")
+        
         // Find the main wide-angle camera to determine the reference zoom factor
         guard let mainIndex = device.constituentDevices.firstIndex(where: { $0.deviceType == .builtInWideAngleCamera }) else {
             return calculateStandardZoomFactors(for: device)
@@ -98,14 +133,27 @@ class CameraDeviceManager: ObservableObject {
         
         let mainZoomFactor = zoomFactors[mainIndex]
         print("zoom: mainZoomFactor: \(mainZoomFactor)")
+        
         // Calculate relative zoom factors (this gives us the proper 0.5x, 1x, 3x values)
         let relativeFactors = zoomFactors.map { $0 / mainZoomFactor }
+        print("zoom: relativeFactors: \(relativeFactors)")
         
-        // Filter and sort the factors
+        // For virtual devices, trust the switchover factors and include ultra-wide even if device reports different limits
         let filteredFactors = relativeFactors.filter { factor in
-            factor >= device.minAvailableVideoZoomFactor &&
-            factor <= device.maxAvailableVideoZoomFactor
+            // Always include factors that are switchover points, even if outside reported device limits
+            let isSwitchoverPoint = abs(factor - 0.5) < 0.1 || // Ultra-wide
+                                   abs(factor - 1.0) < 0.1 || // Wide
+                                   abs(factor - 2.0) < 0.1 || // 2x telephoto
+                                   abs(factor - 3.0) < 0.1    // 3x telephoto
+            
+            let withinDeviceLimits = factor >= device.minAvailableVideoZoomFactor &&
+                                   factor <= device.maxAvailableVideoZoomFactor
+            
+            let isValid = isSwitchoverPoint || withinDeviceLimits
+            print("zoom: Factor \(factor) - SwitchoverPoint: \(isSwitchoverPoint), WithinLimits: \(withinDeviceLimits), Valid: \(isValid)")
+            return isValid
         }.sorted()
+        
         print("zoom: filteredFactors: \(filteredFactors)")
         return filteredFactors.isEmpty ? [1.0] : filteredFactors
     }
