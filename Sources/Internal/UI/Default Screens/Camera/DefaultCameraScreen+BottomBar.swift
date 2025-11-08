@@ -17,6 +17,7 @@ extension DefaultCameraScreen { struct BottomBar: View {
 
     var body: some View {
         ZStack(alignment: .top) {
+          
           if shouldShowFilterIntensitySlider {
             createFilterIntensitySlider()
               .offset(y: shouldShowFilterIntensitySlider ? -156 : -80) // Above filter selector
@@ -103,6 +104,8 @@ private extension DefaultCameraScreen.BottomBar {
 //        }.frame(height: 72)
 //    }
 //}
+
+
 private extension DefaultCameraScreen.BottomBar {
     @ViewBuilder func createLightButton() -> some View { if isLightButtonActive {
       if parent.config.cameraFilterSwitchAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording {
