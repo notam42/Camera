@@ -203,15 +203,23 @@ extension CameraManager {
   func setCameraZoomFactor(_ zoomFactor: CGFloat) throws {
       guard let device = getCameraInput()?.device, zoomFactor != attributes.zoomFactor, !isChanging else { return }
 
-      // For virtual devices, trust the zoom factor directly
-      // The virtual device system handles the camera switching internally
-      let clampedZoom = max(min(zoomFactor, device.maxAvailableVideoZoomFactor), device.minAvailableVideoZoomFactor)
+      print("zoom: Attempting to set zoom to \(zoomFactor)")
       
-      print("zoom: Setting zoom factor \(zoomFactor) (clamped to \(clampedZoom))")
+      // For virtual devices, we need to convert logical zoom to physical zoom
+      let physicalZoom = DeviceCapabilities.getPhysicalZoomFactor(from: zoomFactor, device: device)
+      
+      // Clamp to device limits
+      let clampedZoom = max(min(physicalZoom, device.maxAvailableVideoZoomFactor), device.minAvailableVideoZoomFactor)
+      
+      print("zoom: Logical: \(zoomFactor) → Physical: \(physicalZoom) → Clamped: \(clampedZoom)")
+      print("zoom: Device limits - Min: \(device.minAvailableVideoZoomFactor), Max: \(device.maxAvailableVideoZoomFactor)")
+      
       try setDeviceZoomFactor(clampedZoom, device)
       
-      // Store the requested logical zoom factor (not the clamped physical one)
+      // Store the requested logical zoom factor in attributes
       attributes.zoomFactor = zoomFactor
+      
+      print("zoom: Successfully set zoom. Device zoom factor: \(device.videoZoomFactor)")
   }
 }
 private extension CameraManager {

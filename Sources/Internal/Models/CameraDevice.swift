@@ -128,6 +128,7 @@ class CameraDeviceManager: ObservableObject {
         
         // Find the main wide-angle camera to determine the reference zoom factor
         guard let mainIndex = device.constituentDevices.firstIndex(where: { $0.deviceType == .builtInWideAngleCamera }) else {
+            print("zoom: No wide-angle camera found, falling back to standard calculation")
             return calculateStandardZoomFactors(for: device)
         }
         
@@ -138,19 +139,36 @@ class CameraDeviceManager: ObservableObject {
         let relativeFactors = zoomFactors.map { $0 / mainZoomFactor }
         print("zoom: relativeFactors: \(relativeFactors)")
         
+        // For iPhone 16 and similar devices, add additional telephoto options beyond basic switchover points
+        var expandedFactors = relativeFactors
+        
+        // Add common telephoto zoom levels if they're within device capability and not already present
+        let commonZoomLevels: [CGFloat] = [2.0, 3.0, 5.0]
+        for level in commonZoomLevels {
+            if level <= device.maxAvailableVideoZoomFactor &&
+               !expandedFactors.contains(where: { abs($0 - level) < 0.1 }) {
+                expandedFactors.append(level)
+            }
+        }
+        
         // For virtual devices, trust the switchover factors and include ultra-wide even if device reports different limits
-        let filteredFactors = relativeFactors.filter { factor in
+        let filteredFactors = expandedFactors.filter { factor in
             // Always include factors that are switchover points, even if outside reported device limits
             let isSwitchoverPoint = abs(factor - 0.5) < 0.1 || // Ultra-wide
                                    abs(factor - 1.0) < 0.1 || // Wide
                                    abs(factor - 2.0) < 0.1 || // 2x telephoto
-                                   abs(factor - 3.0) < 0.1    // 3x telephoto
+                                   abs(factor - 3.0) < 0.1 || // 3x telephoto
+                                   abs(factor - 5.0) < 0.1    // 5x telephoto
             
             let withinDeviceLimits = factor >= device.minAvailableVideoZoomFactor &&
                                    factor <= device.maxAvailableVideoZoomFactor
             
-            let isValid = isSwitchoverPoint || withinDeviceLimits
-            print("zoom: Factor \(factor) - SwitchoverPoint: \(isSwitchoverPoint), WithinLimits: \(withinDeviceLimits), Valid: \(isValid)")
+            // For ultra-wide (0.5x), always include if we have ultra-wide camera
+            let isUltraWide = abs(factor - 0.5) < 0.1 &&
+                             device.constituentDevices.contains(where: { $0.deviceType == .builtInUltraWideCamera })
+            
+            let isValid = isSwitchoverPoint || withinDeviceLimits || isUltraWide
+            print("zoom: Factor \(factor) - SwitchoverPoint: \(isSwitchoverPoint), WithinLimits: \(withinDeviceLimits), UltraWide: \(isUltraWide), Valid: \(isValid)")
             return isValid
         }.sorted()
         
