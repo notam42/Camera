@@ -298,12 +298,27 @@ extension CameraManager {
       
       if supportsVirtualSwitching {
           print("zoom: Virtual switchover factors: \(avDevice.virtualDeviceSwitchOverVideoZoomFactors)")
-          print("zoom: Setting zoom \(zoomFactor) on virtual camera system")
+          
+          // CRITICAL FIX: Convert logical zoom to physical zoom for virtual devices
+          let physicalZoom = convertLogicalToPhysicalZoom(zoomFactor, device: avDevice)
+          print("zoom: Converting logical \(zoomFactor) to physical \(physicalZoom)")
+          
+          // Validate that the physical zoom is within device limits
+          let deviceMin = avDevice.minAvailableVideoZoomFactor
+          let deviceMax = avDevice.maxAvailableVideoZoomFactor
+          
+          if physicalZoom < deviceMin || physicalZoom > deviceMax {
+              print("zoom: ERROR - Physical zoom \(physicalZoom) is outside device range [\(deviceMin), \(deviceMax)]")
+              throw MCameraError.cannotSetupInput
+          }
+          
+          print("zoom: Setting physical zoom \(physicalZoom) on virtual camera system")
           
           try avDevice.lockForConfiguration()
-          avDevice.videoZoomFactor = zoomFactor
+          avDevice.videoZoomFactor = physicalZoom
           avDevice.unlockForConfiguration()
-          print("zoom: Set virtual camera zoom to \(zoomFactor)")
+          
+          print("zoom: Successfully set physical zoom to \(physicalZoom)")
           print("zoom: Actual device zoom factor: \(avDevice.videoZoomFactor)")
       } else {
           print("zoom: Single camera device - using clamped zoom")
@@ -311,6 +326,35 @@ extension CameraManager {
           print("zoom: Clamped zoom: \(clampedZoom)")
           try setDeviceZoomFactor(clampedZoom, device)
       }
+  }
+  
+  /// Converts logical zoom factor (UI) to physical zoom factor (device) for virtual devices
+  private func convertLogicalToPhysicalZoom(_ logicalZoom: CGFloat, device: AVCaptureDevice) -> CGFloat {
+      // For virtual devices, we need to map logical zoom to physical zoom
+      // Based on your debug output: virtualDeviceSwitchOverVideoZoomFactors: [2]
+      // This means:
+      // - Physical 1.0 = Ultra-wide camera (logical 0.5x)
+      // - Physical 2.0 = Wide camera (logical 1.0x)
+      // - Physical 4.0+ = Telephoto zoom (logical 2.0x+)
+      
+      if device.virtualDeviceSwitchOverVideoZoomFactors.isEmpty {
+          return logicalZoom
+      }
+      
+      let zoomFactors = [1.0] + device.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat($0.floatValue) }
+      
+      // Find the main wide-angle camera index
+      guard let mainIndex = device.constituentDevices.firstIndex(where: { $0.deviceType == .builtInWideAngleCamera }) else {
+          return logicalZoom
+      }
+      
+      let mainZoomFactor = zoomFactors[mainIndex]
+      
+      // Convert logical to physical: physical = logical * mainZoomFactor
+      let physicalZoom = logicalZoom * mainZoomFactor
+      
+      print("zoom: Logical \(logicalZoom) × main factor \(mainZoomFactor) = physical \(physicalZoom)")
+      return physicalZoom
   }
 }
 private extension CameraManager {
