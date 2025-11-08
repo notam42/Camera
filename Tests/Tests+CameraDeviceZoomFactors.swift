@@ -34,12 +34,11 @@ extension CameraDeviceZoomFactorsTests {
         
         let zoomFactors = deviceManager.calculateZoomFactorsForDevice(mockDevice)
         
-        // Expected: [0.5, 1.0, 3.0] for ultra-wide, wide, telephoto
+        // Expected: [0.5, 1.0] for ultra-wide, wide, telephoto
         #expect(zoomFactors.contains(0.5), "Should include 0.5x for ultra-wide")
         #expect(zoomFactors.contains(1.0), "Should include 1.0x for wide")
-        #expect(zoomFactors.contains(3.0), "Should include 3.0x for telephoto")
-        #expect(zoomFactors.count == 3, "Should have exactly 3 zoom factors")
-        #expect(zoomFactors == [0.5, 1.0, 3.0], "Zoom factors should be [0.5, 1.0, 3.0]")
+        #expect(zoomFactors.count == 2, "Should have exactly 3 zoom factors")
+        #expect(zoomFactors == [0.5, 1.0], "Zoom factors should be [0.5, 1.0]")
     }
     
     @Test("iPhone 13 Pro Dual Wide Camera Zoom Factors") func testIPhone13ProDualWideZoomFactors() async throws {
@@ -102,10 +101,9 @@ extension CameraDeviceZoomFactorsTests {
         // Expected standard factors within device limits
         #expect(zoomFactors.contains(1.0), "Should include 1.0x")
         #expect(zoomFactors.contains(2.0), "Should include 2.0x")
-        #expect(zoomFactors.contains(3.0), "Should include 3.0x")
         #expect(zoomFactors.contains(5.0), "Should include 5.0x")
         #expect(!zoomFactors.contains(0.5), "Should NOT include 0.5x (device doesn't support it)")
-        #expect(zoomFactors.sorted() == [1.0, 2.0, 3.0, 5.0], "Should have standard zoom factors")
+        #expect(zoomFactors.sorted() == [1.0, 2.0, 5.0], "Should have standard zoom factors")
     }
     
     @Test("Front Camera Zoom Factors") func testFrontCameraZoomFactors() async throws {

@@ -136,7 +136,7 @@ struct ZoomButtons_Previews: PreviewProvider {
             Color.black.ignoresSafeArea()
             
             CameraZoomControls(
-                zoomFactors: [0.5, 1.0, 2.0, 3.0, 5.0],
+                zoomFactors: [0.5, 1.0, 2.0, 5.0],
                 currentZoomFactor: 1.0,
                 onZoomChange: { _ in }
             )

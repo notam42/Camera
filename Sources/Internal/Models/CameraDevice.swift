@@ -143,7 +143,7 @@ class CameraDeviceManager: ObservableObject {
         var expandedFactors = relativeFactors
         
         // Add common telephoto zoom levels if they're within device capability and not already present
-        let commonZoomLevels: [CGFloat] = [2.0, 3.0, 5.0]
+        let commonZoomLevels: [CGFloat] = [2.0, 5.0]
         for level in commonZoomLevels {
             if level <= device.maxAvailableVideoZoomFactor &&
                !expandedFactors.contains(where: { abs($0 - level) < 0.1 }) {
@@ -157,7 +157,6 @@ class CameraDeviceManager: ObservableObject {
             let isSwitchoverPoint = abs(factor - 0.5) < 0.1 || // Ultra-wide
                                    abs(factor - 1.0) < 0.1 || // Wide
                                    abs(factor - 2.0) < 0.1 || // 2x telephoto
-                                   abs(factor - 3.0) < 0.1 || // 3x telephoto
                                    abs(factor - 5.0) < 0.1    // 5x telephoto
             
             let withinDeviceLimits = factor >= device.minAvailableVideoZoomFactor &&
@@ -181,7 +180,7 @@ class CameraDeviceManager: ObservableObject {
         var factors: [CGFloat] = []
         
         // Standard zoom levels
-        let standardFactors: [CGFloat] = [0.5, 1.0, 2.0, 3.0, 5.0]
+        let standardFactors: [CGFloat] = [0.5, 1.0, 2.0, 5.0]
         
         for factor in standardFactors {
             if factor >= device.minAvailableVideoZoomFactor &&
