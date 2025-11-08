@@ -26,9 +26,12 @@ extension CameraManager {
             deviceManager.discoverCameras()
         }
         
-        // Try to use discovered virtual device for the current camera position
+        // Convert CameraPosition to AVCaptureDevice.Position
         let currentPosition = attributes.cameraPosition
-        if let discoveredCamera = deviceManager.availableCameras.first(where: { $0.position == currentPosition }) {
+        let avCapturePosition: AVCaptureDevice.Position = currentPosition == .back ? .back : .front
+        
+        // Try to use discovered virtual device for the current camera position
+        if let discoveredCamera = deviceManager.availableCameras.first(where: { $0.position == avCapturePosition }) {
             print("zoom: Using discovered camera zoom factors for \(currentPosition): \(discoveredCamera.zoomFactors)")
             return discoveredCamera.zoomFactors
         }
