@@ -201,21 +201,95 @@ extension CameraManager {
   
   // Simplified approach - work with whatever camera system is actually available
   func setCameraZoomFactor(_ zoomFactor: CGFloat) throws {
-      guard let device = getCameraInput()?.device, zoomFactor != attributes.zoomFactor, !isChanging else { return }
+      guard let sessionDevice = getCameraInput()?.device, zoomFactor != attributes.zoomFactor, !isChanging else { return }
 
       print("zoom: Attempting to set zoom to \(zoomFactor)")
-      print("zoom: Current device zoom: \(device.videoZoomFactor)")
+      print("zoom: Current session device zoom: \(sessionDevice.videoZoomFactor)")
       
-      // Get the actual camera device that's available on this iPhone
-      guard let avDevice = device as? AVCaptureDevice else {
-          print("zoom: Not an AVCaptureDevice, using simple zoom setting")
-          let clampedZoom = max(min(zoomFactor, device.maxAvailableVideoZoomFactor), device.minAvailableVideoZoomFactor)
-          try setDeviceZoomFactor(clampedZoom, device)
+      // CRITICAL FIX: Use the same device discovery approach as the UI
+      let currentPosition = attributes.cameraPosition
+      let avCapturePosition: AVCaptureDevice.Position = currentPosition == .back ? .back : .front
+      
+      let deviceTypes: [AVCaptureDevice.DeviceType] = [
+          .builtInTripleCamera,
+          .builtInDualWideCamera,
+          .builtInDualCamera,
+          .builtInWideAngleCamera,
+      ]
+      
+      let discoverySession = AVCaptureDevice.DiscoverySession(
+          deviceTypes: deviceTypes,
+          mediaType: .video,
+          position: avCapturePosition
+      )
+      
+      guard let actualDevice = discoverySession.devices.first else {
+          print("zoom: No device found in discovery, using session device")
+          let clampedZoom = max(min(zoomFactor, sessionDevice.maxAvailableVideoZoomFactor), sessionDevice.minAvailableVideoZoomFactor)
+          try setDeviceZoomFactor(clampedZoom, sessionDevice)
           attributes.zoomFactor = zoomFactor
           return
       }
       
-      print("zoom: Working with device: \(avDevice.deviceType.rawValue)")
+      print("zoom: Found actual device: \(actualDevice.deviceType.rawValue)")
+      print("zoom: Session device: \((sessionDevice as? AVCaptureDevice)?.deviceType.rawValue ?? "unknown")")
+      
+      // Check if session device matches the discovered device
+      if let sessionAVDevice = sessionDevice as? AVCaptureDevice,
+         sessionAVDevice.uniqueID != actualDevice.uniqueID {
+          print("zoom: DEVICE MISMATCH! Session is using wrong device.")
+          print("zoom: Session: \(sessionAVDevice.deviceType.rawValue) (\(sessionAVDevice.uniqueID))")
+          print("zoom: Should be: \(actualDevice.deviceType.rawValue) (\(actualDevice.uniqueID))")
+          
+          // Try to switch the session to use the correct device
+          try switchToCorrectDevice(actualDevice)
+          
+          // Get the new session device after switching
+          guard let newSessionDevice = getCameraInput()?.device else {
+              throw MCameraError.cannotSetupInput
+          }
+          
+          print("zoom: Successfully switched to correct device")
+          try performZoomOnDevice(zoomFactor, device: newSessionDevice)
+      } else {
+          // Session device is correct, proceed with zoom
+          print("zoom: Session device is correct, setting zoom")
+          try performZoomOnDevice(zoomFactor, device: sessionDevice)
+      }
+      
+      attributes.zoomFactor = zoomFactor
+      print("zoom: Final device zoom factor: \(sessionDevice.videoZoomFactor)")
+  }
+  
+  private func switchToCorrectDevice(_ targetDevice: AVCaptureDevice) throws {
+      let currentPosition = attributes.cameraPosition
+      
+      // Remove current input
+      if let currentInput = getCameraInput() {
+          captureSession.remove(input: currentInput)
+      }
+      
+      // Create input with target device
+      let newInput = try AVCaptureDeviceInput(device: targetDevice)
+      try captureSession.add(input: newInput)
+      
+      // Update stored input reference
+      switch currentPosition {
+      case .back:
+          backCameraInput = newInput
+      case .front:
+          frontCameraInput = newInput
+      }
+  }
+  
+  private func performZoomOnDevice(_ zoomFactor: CGFloat, device: any CaptureDevice) throws {
+      guard let avDevice = device as? AVCaptureDevice else {
+          let clampedZoom = max(min(zoomFactor, device.maxAvailableVideoZoomFactor), device.minAvailableVideoZoomFactor)
+          try setDeviceZoomFactor(clampedZoom, device)
+          return
+      }
+      
+      print("zoom: Setting zoom on: \(avDevice.deviceType.rawValue)")
       print("zoom: Device limits - Min: \(avDevice.minAvailableVideoZoomFactor), Max: \(avDevice.maxAvailableVideoZoomFactor)")
       
       // Check if this device supports virtual camera switching (multi-camera system)
@@ -224,36 +298,19 @@ extension CameraManager {
       
       if supportsVirtualSwitching {
           print("zoom: Virtual switchover factors: \(avDevice.virtualDeviceSwitchOverVideoZoomFactors)")
-          
-          // For devices with virtual camera switching, allow zoom values outside reported min/max
-          // The virtual system handles camera switching internally
           print("zoom: Setting zoom \(zoomFactor) on virtual camera system")
           
-          do {
-              try avDevice.lockForConfiguration()
-              avDevice.videoZoomFactor = zoomFactor
-              avDevice.unlockForConfiguration()
-              print("zoom: Successfully set virtual camera zoom to \(zoomFactor)")
-              print("zoom: Actual device zoom factor: \(avDevice.videoZoomFactor)")
-          } catch {
-              print("zoom: Virtual camera zoom failed: \(error)")
-              // Fallback to clamped zoom
-              let clampedZoom = max(min(zoomFactor, avDevice.maxAvailableVideoZoomFactor), avDevice.minAvailableVideoZoomFactor)
-              print("zoom: Falling back to clamped zoom: \(clampedZoom)")
-              try setDeviceZoomFactor(clampedZoom, device)
-          }
+          try avDevice.lockForConfiguration()
+          avDevice.videoZoomFactor = zoomFactor
+          avDevice.unlockForConfiguration()
+          print("zoom: Set virtual camera zoom to \(zoomFactor)")
+          print("zoom: Actual device zoom factor: \(avDevice.videoZoomFactor)")
       } else {
-          // For single camera devices, use normal clamping
           print("zoom: Single camera device - using clamped zoom")
           let clampedZoom = max(min(zoomFactor, avDevice.maxAvailableVideoZoomFactor), avDevice.minAvailableVideoZoomFactor)
           print("zoom: Clamped zoom: \(clampedZoom)")
           try setDeviceZoomFactor(clampedZoom, device)
       }
-      
-      // Store the requested zoom factor in attributes
-      attributes.zoomFactor = zoomFactor
-      
-      print("zoom: Final device zoom factor: \(device.videoZoomFactor)")
   }
 }
 private extension CameraManager {
