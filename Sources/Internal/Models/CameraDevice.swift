@@ -90,14 +90,14 @@ class CameraDeviceManager: ObservableObject {
     private func calculateVirtualDeviceZoomFactors(for device: AVCaptureDevice) -> [CGFloat] {
         // Start with base zoom factor of 1
         let zoomFactors = [1.0] + device.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat($0.floatValue) }
-        
+        print("zoom: zoomFactors: \(zoomFactors)")
         // Find the main wide-angle camera to determine the reference zoom factor
         guard let mainIndex = device.constituentDevices.firstIndex(where: { $0.deviceType == .builtInWideAngleCamera }) else {
             return calculateStandardZoomFactors(for: device)
         }
         
         let mainZoomFactor = zoomFactors[mainIndex]
-        
+        print("zoom: mainZoomFactor: \(mainZoomFactor)")
         // Calculate relative zoom factors (this gives us the proper 0.5x, 1x, 3x values)
         let relativeFactors = zoomFactors.map { $0 / mainZoomFactor }
         
@@ -106,7 +106,7 @@ class CameraDeviceManager: ObservableObject {
             factor >= device.minAvailableVideoZoomFactor &&
             factor <= device.maxAvailableVideoZoomFactor
         }.sorted()
-        
+        print("zoom: filteredFactors: \(filteredFactors)")
         return filteredFactors.isEmpty ? [1.0] : filteredFactors
     }
     
