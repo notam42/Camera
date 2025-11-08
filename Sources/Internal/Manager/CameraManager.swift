@@ -190,12 +190,29 @@ private extension CameraManager {
 
 // MARK: Set Camera Zoom
 extension CameraManager {
+  /*
     func setCameraZoomFactor(_ zoomFactor: CGFloat) throws {
         guard let device = getCameraInput()?.device, zoomFactor != attributes.zoomFactor, !isChanging else { return }
 
         try setDeviceZoomFactor(zoomFactor, device)
         attributes.zoomFactor = device.videoZoomFactor
     }
+   */
+  
+  // Updated to work properly with virtual devices and zoom buttons
+  func setCameraZoomFactor(_ zoomFactor: CGFloat) throws {
+      guard let device = getCameraInput()?.device, zoomFactor != attributes.zoomFactor, !isChanging else { return }
+
+      // For virtual devices, trust the zoom factor directly
+      // The virtual device system handles the camera switching internally
+      let clampedZoom = max(min(zoomFactor, device.maxAvailableVideoZoomFactor), device.minAvailableVideoZoomFactor)
+      
+      print("zoom: Setting zoom factor \(zoomFactor) (clamped to \(clampedZoom))")
+      try setDeviceZoomFactor(clampedZoom, device)
+      
+      // Store the requested logical zoom factor (not the clamped physical one)
+      attributes.zoomFactor = zoomFactor
+  }
 }
 private extension CameraManager {
     func setDeviceZoomFactor(_ zoomFactor: CGFloat, _ device: any CaptureDevice) throws {
@@ -422,6 +439,8 @@ private extension CameraManager {
 
 // MARK: Methods
 extension CameraManager {
+  /*
+   // OLD
     func resetAttributes(device: (any CaptureDevice)?) {
         guard let device else { return }
 
@@ -437,6 +456,29 @@ extension CameraManager {
 
         attributes = newAttributes
     }
+   */
+  
+  // NEW
+  func resetAttributes(device: (any CaptureDevice)?) {
+      guard let device else { return }
+
+      var newAttributes = attributes
+      newAttributes.cameraExposure.mode = device.exposureMode
+      newAttributes.cameraExposure.duration = device.exposureDuration
+      newAttributes.cameraExposure.iso = device.iso
+      newAttributes.cameraExposure.targetBias = device.exposureTargetBias
+      newAttributes.frameRate = device.activeVideoMaxFrameDuration.timescale
+      
+      // Use logical zoom factor instead of physical
+      newAttributes.zoomFactor = DeviceCapabilities.getLogicalZoomFactor(from: device)
+      
+      newAttributes.lightMode = device.lightMode
+      newAttributes.hdrMode = device.hdrMode
+
+      attributes = newAttributes
+  }
+  
+  
     func getCameraInput(_ position: CameraPosition? = nil) -> (any CaptureDeviceInput)? { switch position ?? attributes.cameraPosition {
         case .front: frontCameraInput
         case .back: backCameraInput

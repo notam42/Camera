@@ -21,11 +21,22 @@ extension CameraManager {
     
     /// Gets available zoom factors for the current camera
     var availableZoomFactors: [CGFloat] {
-        guard let currentDevice = getCurrentCameraDevice() else { return [1.0] }
+        // First try to use the discovered camera data
+        if let currentCameraDevice = deviceManager.currentCamera {
+            print("zoom: Using discovered zoom factors: \(currentCameraDevice.zoomFactors)")
+            return currentCameraDevice.zoomFactors
+        }
         
-        // Use the device manager's zoom factor calculation
-        let tempDeviceManager = CameraDeviceManager()
-        return tempDeviceManager.calculateZoomFactorsForDevice(currentDevice)
+        // Fallback: calculate directly from current device
+        guard let currentDevice = getCurrentCameraDevice() else { 
+            print("zoom: No current device, using fallback [1.0]")
+            return [1.0] 
+        }
+        
+        print("zoom: Fallback: calculating zoom factors for device")
+        let factors = deviceManager.calculateZoomFactorsForDevice(currentDevice)
+        print("zoom: Fallback calculated factors: \(factors)")
+        return factors
     }
     
     /// Sets zoom factor with smooth animation support
