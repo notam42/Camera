@@ -266,31 +266,35 @@ extension CameraManager {
               }
           }
           
-          // Approach 2: Try setting zoom on session device (fallback)
+          // Approach 2: Try setting zoom on session device (fallback) - ONLY if virtual device failed
           if !zoomSetSuccessfully {
               print("zoom: Trying session device zoom")
               do {
-                  try setDeviceZoomFactor(targetZoom, device)
-                  print("zoom: Session device zoom attempted")
+                  // Check if the session device can handle this zoom before attempting
+                  if let sessionAVDevice = device as? AVCaptureDevice {
+                      let sessionMin = sessionAVDevice.minAvailableVideoZoomFactor
+                      let sessionMax = sessionAVDevice.maxAvailableVideoZoomFactor
+                      
+                      if targetZoom >= sessionMin && targetZoom <= sessionMax {
+                          try setDeviceZoomFactor(targetZoom, device)
+                          print("zoom: Session device zoom successful")
+                          zoomSetSuccessfully = true
+                      } else {
+                          print("zoom: Session device cannot handle zoom \(targetZoom) (range: \(sessionMin)-\(sessionMax))")
+                      }
+                  }
               } catch {
                   print("zoom: Session device zoom failed: \(error)")
               }
           }
           
-          // Approach 3: If still not working, try bypassing min/max constraints for virtual devices
-          if device.videoZoomFactor != targetZoom && abs(device.videoZoomFactor - targetZoom) > 0.1 {
-              print("zoom: Standard approaches failed, trying force zoom for virtual device")
-              do {
-                  // For virtual devices, try setting zoom without respecting reported limits
-                  if let avDevice = device as? AVCaptureDevice {
-                      try avDevice.lockForConfiguration()
-                      avDevice.videoZoomFactor = targetZoom
-                      avDevice.unlockForConfiguration()
-                      print("zoom: Force zoom completed")
-                  }
-              } catch {
-                  print("zoom: Force zoom failed: \(error)")
-              }
+          // Approach 3: Force zoom only if both previous approaches failed AND we're confident it will work
+          if !zoomSetSuccessfully {
+              print("zoom: All approaches failed, zoom not set")
+              // Don't attempt force zoom as it causes crashes
+              // Virtual devices should handle zoom switching internally
+          } else {
+              print("zoom: Zoom successfully set using one of the approaches")
           }
           
       } else {
