@@ -45,7 +45,7 @@ class CameraDeviceManager: ObservableObject {
                 .builtInTripleCamera
             ],
             mediaType: .video,
-            position: .unspecified
+            position: .back//.unspecified
         )
         
         for device in discoverySession.devices {
