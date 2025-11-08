@@ -206,44 +206,58 @@ extension CameraManager {
       print("zoom: Attempting to set zoom to \(zoomFactor)")
       print("zoom: Current device zoom: \(device.videoZoomFactor)")
       
-      // Cast to AVCaptureDevice to access virtual device properties
-      guard let avDevice = device as? AVCaptureDevice else {
-          print("zoom: Not an AVCaptureDevice, using simple zoom setting")
-          let clampedZoom = max(min(zoomFactor, device.maxAvailableVideoZoomFactor), device.minAvailableVideoZoomFactor)
-          try setDeviceZoomFactor(clampedZoom, device)
-          attributes.zoomFactor = zoomFactor
-          return
+      // CRITICAL FIX: Try to use the discovered virtual device instead of session device
+      let currentPosition = attributes.cameraPosition
+      let avCapturePosition: AVCaptureDevice.Position = currentPosition == .back ? .back : .front
+      
+      // Get the device manager's discovered virtual device for the current position
+      let deviceToUse: AVCaptureDevice
+      if let discoveredCamera = deviceManager.availableCameras.first(where: { $0.position == avCapturePosition }) {
+          let discoveredAVDevice = discoveredCamera.device
+          print("zoom: Using discovered virtual device: \(discoveredAVDevice.deviceType.rawValue)")
+          deviceToUse = discoveredAVDevice
+      } else {
+          print("zoom: Falling back to session device")
+          guard let avDevice = device as? AVCaptureDevice else {
+              print("zoom: Not an AVCaptureDevice, using simple zoom setting")
+              let clampedZoom = max(min(zoomFactor, device.maxAvailableVideoZoomFactor), device.minAvailableVideoZoomFactor)
+              try setDeviceZoomFactor(clampedZoom, device)
+              attributes.zoomFactor = zoomFactor
+              return
+          }
+          deviceToUse = avDevice
       }
       
-      print("zoom: Device type: \(avDevice.deviceType.rawValue)")
-      print("zoom: Device limits - Min: \(avDevice.minAvailableVideoZoomFactor), Max: \(avDevice.maxAvailableVideoZoomFactor)")
+      print("zoom: Using device type: \(deviceToUse.deviceType.rawValue)")
+      print("zoom: Device limits - Min: \(deviceToUse.minAvailableVideoZoomFactor), Max: \(deviceToUse.maxAvailableVideoZoomFactor)")
       
-      // For virtual devices, try setting the zoom factor directly first
+      // For virtual devices, try setting the zoom factor directly
       // Virtual devices should handle camera switching internally
-      if !avDevice.virtualDeviceSwitchOverVideoZoomFactors.isEmpty {
+      if !deviceToUse.virtualDeviceSwitchOverVideoZoomFactors.isEmpty {
           print("zoom: Virtual device - attempting direct zoom setting")
-          print("zoom: Virtual switchover factors: \(avDevice.virtualDeviceSwitchOverVideoZoomFactors)")
+          print("zoom: Virtual switchover factors: \(deviceToUse.virtualDeviceSwitchOverVideoZoomFactors)")
           
           // For virtual devices, we need to be more permissive with the zoom range
-          // The device might report incorrect min/max values for the virtual system
           let targetZoom: CGFloat
           
-          if zoomFactor < avDevice.minAvailableVideoZoomFactor {
+          if zoomFactor < deviceToUse.minAvailableVideoZoomFactor {
               // For ultra-wide (0.5x), try setting it anyway as virtual devices often handle this
-              print("zoom: Target zoom \(zoomFactor) is below reported min \(avDevice.minAvailableVideoZoomFactor)")
+              print("zoom: Target zoom \(zoomFactor) is below reported min \(deviceToUse.minAvailableVideoZoomFactor)")
               print("zoom: Attempting to set it anyway for virtual device ultra-wide capability")
               targetZoom = zoomFactor
           } else {
-              targetZoom = min(zoomFactor, avDevice.maxAvailableVideoZoomFactor)
+              targetZoom = min(zoomFactor, deviceToUse.maxAvailableVideoZoomFactor)
           }
           
           print("zoom: Setting target zoom: \(targetZoom)")
+          
+          // IMPORTANT: Set zoom on the actual session device, not the discovered device
           try setDeviceZoomFactor(targetZoom, device)
           
       } else {
           // For non-virtual devices, use traditional clamping
           print("zoom: Non-virtual device - using clamped zoom")
-          let clampedZoom = max(min(zoomFactor, avDevice.maxAvailableVideoZoomFactor), avDevice.minAvailableVideoZoomFactor)
+          let clampedZoom = max(min(zoomFactor, deviceToUse.maxAvailableVideoZoomFactor), deviceToUse.minAvailableVideoZoomFactor)
           print("zoom: Clamped zoom: \(clampedZoom)")
           try setDeviceZoomFactor(clampedZoom, device)
       }
