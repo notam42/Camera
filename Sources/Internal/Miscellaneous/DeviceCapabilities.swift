@@ -65,8 +65,14 @@ struct DeviceCapabilities {
     /// This is used when setting zoom on virtual devices
     static func getPhysicalZoomFactor(from logicalZoom: CGFloat, device: any CaptureDevice) -> CGFloat {
         guard let avDevice = device as? AVCaptureDevice else {
+            print("zoom: DeviceCapabilities - Not an AVCaptureDevice, returning logical zoom: \(logicalZoom)")
             return logicalZoom
         }
+        
+        print("zoom: DeviceCapabilities - Converting logical zoom \(logicalZoom)")
+        print("zoom: DeviceCapabilities - Device type: \(avDevice.deviceType.rawValue)")
+        print("zoom: DeviceCapabilities - Virtual switchover factors: \(avDevice.virtualDeviceSwitchOverVideoZoomFactors)")
+        print("zoom: DeviceCapabilities - Has ultra-wide: \(avDevice.constituentDevices.contains(where: { $0.deviceType == .builtInUltraWideCamera }))")
         
         // For virtual devices with ultra-wide, convert logical zoom to physical zoom
         if !avDevice.virtualDeviceSwitchOverVideoZoomFactors.isEmpty &&
@@ -74,17 +80,24 @@ struct DeviceCapabilities {
             
             // Find the main wide-angle camera reference point
             let zoomFactors = [1.0] + avDevice.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat($0.floatValue) }
+            print("zoom: DeviceCapabilities - Zoom factors array: \(zoomFactors)")
+            
             guard let mainIndex = avDevice.constituentDevices.firstIndex(where: { $0.deviceType == .builtInWideAngleCamera }) else {
+                print("zoom: DeviceCapabilities - No wide-angle camera found, returning logical zoom: \(logicalZoom)")
                 return logicalZoom
             }
             
             let mainZoomFactor = zoomFactors[mainIndex]
+            print("zoom: DeviceCapabilities - Main camera at index \(mainIndex), zoom factor: \(mainZoomFactor)")
             
             // Convert logical zoom to physical zoom
-            return logicalZoom * mainZoomFactor
+            let physicalZoom = logicalZoom * mainZoomFactor
+            print("zoom: DeviceCapabilities - Logical \(logicalZoom) → Physical \(physicalZoom)")
+            return physicalZoom
         }
         
         // For single cameras or devices without ultra-wide, use logical zoom directly
+        print("zoom: DeviceCapabilities - Single camera device, returning logical zoom: \(logicalZoom)")
         return logicalZoom
     }
 }
