@@ -21,30 +21,35 @@ extension CameraManager {
     
     /// Gets available zoom factors for the current camera
     var availableZoomFactors: [CGFloat] {
-        // First, ensure device discovery has been done
-        if deviceManager.availableCameras.isEmpty {
-            deviceManager.discoverCameras()
-        }
-        
-        // Convert CameraPosition to AVCaptureDevice.Position
+        // Use your suggested approach - detect what camera system is actually available
         let currentPosition = attributes.cameraPosition
         let avCapturePosition: AVCaptureDevice.Position = currentPosition == .back ? .back : .front
         
-        // Try to use discovered virtual device for the current camera position
-        if let discoveredCamera = deviceManager.availableCameras.first(where: { $0.position == avCapturePosition }) {
-            print("zoom: Using discovered camera zoom factors for \(currentPosition): \(discoveredCamera.zoomFactors)")
-            return discoveredCamera.zoomFactors
-        }
+        let deviceTypes: [AVCaptureDevice.DeviceType] = [
+            .builtInTripleCamera,
+            .builtInDualWideCamera,
+            .builtInDualCamera,
+            .builtInWideAngleCamera,
+        ]
         
-        // Fallback: calculate from current session device
-        guard let currentDevice = getCurrentCameraDevice() else {
-            print("zoom: No current device, using fallback [1.0]")
+        let discoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: deviceTypes,
+            mediaType: .video,
+            position: avCapturePosition
+        )
+        
+        guard let selectedDevice = discoverySession.devices.first else {
+            print("zoom: No device found, using fallback [1.0]")
             return [1.0]
         }
         
-        print("zoom: Fallback: calculating zoom factors for session device: \(currentDevice.uniqueID)")
-        let factors = deviceManager.calculateZoomFactorsForDevice(currentDevice)
-        print("zoom: Fallback calculated factors: \(factors)")
+        print("zoom: Found device: \(selectedDevice.deviceType.rawValue)")
+        print("zoom: Virtual switchover factors: \(selectedDevice.virtualDeviceSwitchOverVideoZoomFactors)")
+        print("zoom: Device limits: \(selectedDevice.minAvailableVideoZoomFactor) - \(selectedDevice.maxAvailableVideoZoomFactor)")
+        
+        // Calculate zoom factors based on this actual device
+        let factors = deviceManager.calculateZoomFactorsForDevice(selectedDevice)
+        print("zoom: Calculated zoom factors: \(factors)")
         return factors
     }
     
