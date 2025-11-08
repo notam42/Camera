@@ -70,24 +70,52 @@ class CameraDeviceManager: ObservableObject {
     }
     
     /// Calculates appropriate zoom factors for a device based on Apple's camera app behavior
+    /// Uses virtualDeviceSwitchOverVideoZoomFactors to properly detect ultra-wide and telephoto zoom factors
     private func calculateZoomFactors(for device: AVCaptureDevice) -> [CGFloat] {
+        // Check if this is a virtual device (multi-camera system)
+        if !device.virtualDeviceSwitchOverVideoZoomFactors.isEmpty {
+            return calculateVirtualDeviceZoomFactors(for: device)
+        }
+        
+        // Fallback for single camera devices
+        return calculateStandardZoomFactors(for: device)
+    }
+    
+    /// Calculates zoom factors for virtual devices using switchover points
+    private func calculateVirtualDeviceZoomFactors(for device: AVCaptureDevice) -> [CGFloat] {
+        // Start with base zoom factor of 1
+        let zoomFactors = [1.0] + device.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat($0.floatValue) }
+        
+        // Find the main wide-angle camera to determine the reference zoom factor
+        guard let mainIndex = device.constituentDevices.firstIndex(where: { $0.deviceType == .builtInWideAngleCamera }) else {
+            return calculateStandardZoomFactors(for: device)
+        }
+        
+        let mainZoomFactor = zoomFactors[mainIndex]
+        
+        // Calculate relative zoom factors (this gives us the proper 0.5x, 1x, 3x values)
+        let relativeFactors = zoomFactors.map { $0 / mainZoomFactor }
+        
+        // Filter and sort the factors
+        let filteredFactors = relativeFactors.filter { factor in
+            factor >= device.minAvailableVideoZoomFactor &&
+            factor <= device.maxAvailableVideoZoomFactor
+        }.sorted()
+        
+        return filteredFactors.isEmpty ? [1.0] : filteredFactors
+    }
+    
+    /// Fallback calculation for non-virtual devices
+    private func calculateStandardZoomFactors(for device: AVCaptureDevice) -> [CGFloat] {
         var factors: [CGFloat] = []
         
-        // Standard zoom levels that match Apple's Camera app
+        // Standard zoom levels
         let standardFactors: [CGFloat] = [0.5, 1.0, 2.0, 3.0, 5.0]
         
         for factor in standardFactors {
             if factor >= device.minAvailableVideoZoomFactor &&
                factor <= device.maxAvailableVideoZoomFactor {
                 factors.append(factor)
-            }
-        }
-        
-        // Add maximum zoom if it's beyond 5x and significantly different
-        if device.maxAvailableVideoZoomFactor > 5.0 {
-            let maxZoom = device.maxAvailableVideoZoomFactor
-            if !factors.contains(where: { abs($0 - maxZoom) < 0.1 }) {
-                factors.append(maxZoom)
             }
         }
         
