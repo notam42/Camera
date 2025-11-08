@@ -22,7 +22,10 @@ extension CameraManager {
     /// Gets available zoom factors for the current camera
     var availableZoomFactors: [CGFloat] {
         guard let currentDevice = getCurrentCameraDevice() else { return [1.0] }
-        return calculateZoomFactors(for: currentDevice)
+        
+        // Use the device manager's zoom factor calculation
+        let tempDeviceManager = CameraDeviceManager()
+        return tempDeviceManager.calculateZoomFactorsForDevice(currentDevice)
     }
     
     /// Sets zoom factor with smooth animation support
@@ -41,35 +44,7 @@ extension CameraManager {
     private func getCurrentCameraDevice() -> AVCaptureDevice? {
         return getCameraInput()?.device as? AVCaptureDevice
     }
-    
-    /// Calculates appropriate zoom factors for a device based on Apple's camera app behavior
-    private func calculateZoomFactors(for device: AVCaptureDevice) -> [CGFloat] {
-        var factors: [CGFloat] = []
-        
-        // Define standard zoom levels that work well across different devices
-        let potentialFactors: [CGFloat] = [0.5, 1.0, 2.0, 3.0, 5.0]
-        
-        for factor in potentialFactors {
-            if factor >= device.minAvailableVideoZoomFactor &&
-               factor <= device.maxAvailableVideoZoomFactor {
-                factors.append(factor)
-            }
-        }
-        
-        // Add maximum zoom if it's significantly beyond our standard factors
-        let maxZoom = device.maxAvailableVideoZoomFactor
-        if maxZoom > 5.0 && !factors.contains(where: { abs($0 - maxZoom) < 0.5 }) {
-            factors.append(maxZoom)
-        }
-        
-        // Ensure we always have at least 1.0x
-        if factors.isEmpty || !factors.contains(1.0) {
-            factors = [1.0]
-        }
-        
-        return factors.sorted()
-    }
-    
+
     /// Initializes camera device discovery
     func setupCameraDeviceDiscovery() {
         deviceManager.discoverCameras()
@@ -80,8 +55,8 @@ extension CameraManager {
         guard let currentDevice = getCurrentCameraDevice() else { return }
         
         // Find matching camera device in our discovered cameras
-        if let matchingCamera = deviceManager.availableCameras.first(where: { 
-            $0.device.uniqueID == currentDevice.uniqueID 
+        if let matchingCamera = deviceManager.availableCameras.first(where: {
+            $0.device.uniqueID == currentDevice.uniqueID
         }) {
             deviceManager.currentCamera = matchingCamera
         }
@@ -90,23 +65,23 @@ extension CameraManager {
 
 // MARK: - Camera Device Capabilities
 extension CameraManager {
-    /// Checks if the device supports ultra-wide camera (0.5x zoom)
-    var supportsUltraWide: Bool {
-        availableZoomFactors.contains(0.5)
-    }
-    
-    /// Checks if the device supports telephoto zoom (3x or higher)
-    var supportsTelephoto: Bool {
-        availableZoomFactors.contains { $0 >= 3.0 }
-    }
-    
-    /// Gets the maximum available zoom factor
-    var maxZoomFactor: CGFloat {
-        getCurrentCameraDevice()?.maxAvailableVideoZoomFactor ?? 1.0
-    }
-    
-    /// Gets the minimum available zoom factor
-    var minZoomFactor: CGFloat {
-        getCurrentCameraDevice()?.minAvailableVideoZoomFactor ?? 1.0
-    }
+  /// Checks if the device supports ultra-wide camera (0.5x zoom)
+  var supportsUltraWide: Bool {
+    availableZoomFactors.contains(0.5)
+  }
+  
+  /// Checks if the device supports telephoto zoom (3x or higher)
+  var supportsTelephoto: Bool {
+    availableZoomFactors.contains { $0 >= 3.0 }
+  }
+  
+  /// Gets the maximum available zoom factor
+  var maxZoomFactor: CGFloat {
+    getCurrentCameraDevice()?.maxAvailableVideoZoomFactor ?? 1.0
+  }
+  
+  /// Gets the minimum available zoom factor
+  var minZoomFactor: CGFloat {
+    getCurrentCameraDevice()?.minAvailableVideoZoomFactor ?? 1.0
+  }
 }

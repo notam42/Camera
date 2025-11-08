@@ -69,11 +69,11 @@ struct ZoomButtonsView: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
-        .background(
-            Capsule()
-              .fill(Color.black.opacity(0.8))
-                //.backdrop(.ultraThinMaterial)
-        )
+//        .background(
+//            Capsule()
+//              .fill(Color.black.opacity(0.8))
+//                //.backdrop(.ultraThinMaterial)
+//        )
     }
 }
 

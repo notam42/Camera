@@ -71,7 +71,7 @@ class CameraDeviceManager: ObservableObject {
     
     /// Calculates appropriate zoom factors for a device based on Apple's camera app behavior
     /// Uses virtualDeviceSwitchOverVideoZoomFactors to properly detect ultra-wide and telephoto zoom factors
-    private func calculateZoomFactors(for device: AVCaptureDevice) -> [CGFloat] {
+    func calculateZoomFactorsForDevice(_ device: AVCaptureDevice) -> [CGFloat] {
         // Check if this is a virtual device (multi-camera system)
         if !device.virtualDeviceSwitchOverVideoZoomFactors.isEmpty {
             return calculateVirtualDeviceZoomFactors(for: device)
@@ -79,6 +79,11 @@ class CameraDeviceManager: ObservableObject {
         
         // Fallback for single camera devices
         return calculateStandardZoomFactors(for: device)
+    }
+    
+    /// Internal method used during camera discovery
+    private func calculateZoomFactors(for device: AVCaptureDevice) -> [CGFloat] {
+        return calculateZoomFactorsForDevice(device)
     }
     
     /// Calculates zoom factors for virtual devices using switchover points
