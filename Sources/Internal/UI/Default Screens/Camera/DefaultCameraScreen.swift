@@ -20,8 +20,10 @@ public struct DefaultCameraScreen: MCameraScreen {
 
     public var body: some View {
         ZStack {
-          createZoomButtons()
+          
             createContentView()
+          createSimpleZoomButtons()
+            .padding(.bottom, 200)
             createTopBar()
             createBottomBar()
         }
