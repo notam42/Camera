@@ -24,7 +24,13 @@ extension DefaultCameraScreen { struct BottomBar: View {
               .transition(.opacity.combined(with: .move(edge: .bottom)))
               .animation(.easeInOut(duration: 0.3), value: shouldShowFilterIntensitySlider)
           }
-
+          
+          if shouldShowZoomButtons {
+            createZoomButtons()
+              .offset(y: -80)
+              .transition(.opacity.combined(with: .move(edge: .bottom)))
+              .animation(.easeInOut(duration: 0.3), value: shouldShowZoomButtons)
+          }
 
           createFilterTypeSwitch()
 
@@ -41,22 +47,26 @@ private extension DefaultCameraScreen.BottomBar {
     isFilterPaneVisible && isFilterTypeSwitchActive && !parent.cameraFilters.isEmpty
   }
   
+  var shouldShowZoomButtons: Bool {
+    !isFilterPaneVisible && isZoomButtonsActive
+  }
+  
   @ViewBuilder func createFilterIntensitySlider() -> some View {
       VStack(spacing: 4) {
 //          HStack {
 //              Text("0%")
 //                  .font(.caption2)
 //                  .foregroundColor(.secondary)
-//              
+//
 //              Spacer()
-//              
+//
 //              Text("\(Int(parent.filterIntensity))%")
 //                  .font(.caption)
 //                  .fontWeight(.medium)
 //                  .foregroundColor(.primary)
 //
 //              Spacer()
-//              
+//
 //              Text("100%")
 //                  .font(.caption2)
 //                  .foregroundColor(.secondary)
@@ -76,7 +86,15 @@ private extension DefaultCameraScreen.BottomBar {
     //.transition(.opacity.combined(with: .move(edge: .bottom)))
   }
   
-  
+  @ViewBuilder func createZoomButtons() -> some View {
+      ZoomButtonsView(
+          zoomFactors: parent.cameraManager.availableZoomFactors,
+          currentZoomFactor: parent.cameraManager.attributes.zoomFactor,
+          onZoomChange: { factor in
+              parent.cameraManager.setZoomFactorSmooth(factor)
+          }
+      )
+  }
   
     @ViewBuilder func createFilterTypeSwitch() -> some View { if isFilterPaneVisible && isFilterTypeSwitchActive {
         DefaultCameraScreen.CameraFilterSwitch(parent: parent)
@@ -187,6 +205,7 @@ private extension DefaultCameraScreen.BottomBar {
 private extension DefaultCameraScreen.BottomBar {
     var isOutputTypeSwitchActive: Bool { parent.config.cameraOutputSwitchAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording }
     var isFilterTypeSwitchActive: Bool { parent.config.cameraFilterSwitchAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording }
+    var isZoomButtonsActive: Bool { parent.cameraManager.captureSession.isRunning && !parent.isRecording }
     var isLightButtonActive: Bool { parent.config.lightButtonAllowed && parent.hasLight && parent.cameraManager.captureSession.isRunning && !parent.isRecording }
     var isCaptureButtonActive: Bool { parent.config.captureButtonAllowed && parent.cameraManager.captureSession.isRunning }
     var isChangeCameraPositionButtonActive: Bool { parent.config.cameraPositionButtonAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording }

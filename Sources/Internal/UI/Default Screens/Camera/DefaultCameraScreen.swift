@@ -17,15 +17,9 @@ public struct DefaultCameraScreen: MCameraScreen {
     public let closeMCameraAction: () -> ()
     var config: Config = .init()
 
-
     public var body: some View {
         ZStack {
-          
             createContentView()
-          createSimpleZoomButtons()
-//            .padding(.bottom, 100)
-          
-          //createZoomButtons()
             createTopBar()
             createBottomBar()
         }
