@@ -206,7 +206,7 @@ private extension CameraManager {
         try captureSession.add(input: getCameraInput(position))
     }
     func resetAttributesWhenChangingCamera(_ position: CameraPosition) {
-        resetAttributes(device: getCameraInput(position)?.device)
+        resetAttributes(device: getCameraInput(position)?.device, preserveZoom: true)
         attributes.cameraPosition = position
     }
 }
@@ -639,7 +639,6 @@ extension CameraManager {
       newAttributes.cameraExposure.iso = device.iso
       newAttributes.cameraExposure.targetBias = device.exposureTargetBias
       newAttributes.frameRate = device.activeVideoMaxFrameDuration.timescale
-      
     
     if preserveZoom {
       newAttributes.zoomFactor = currentZoomFactor
@@ -647,7 +646,6 @@ extension CameraManager {
       // Use logical zoom factor instead of physical
       newAttributes.zoomFactor = DeviceCapabilities.getLogicalZoomFactor(from: device)
     }
-      
       
       newAttributes.lightMode = device.lightMode
       newAttributes.hdrMode = device.hdrMode
