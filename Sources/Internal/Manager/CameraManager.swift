@@ -100,7 +100,7 @@ private extension CameraManager {
         setInitialZoomLevel()
         
         // Now reset attributes after zoom is properly set
-        resetAttributes(device: device)
+        resetAttributes(device: device, preserveZoom: true)
         
         cameraMetalView.performCameraEntranceAnimation()
     }}
@@ -625,8 +625,13 @@ extension CameraManager {
    */
   
   // NEW
-  func resetAttributes(device: (any CaptureDevice)?) {
+  func resetAttributes(
+    device: (any CaptureDevice)?,
+    preserveZoom: Bool = false
+  ) {
       guard let device else { return }
+    
+      let currentZoomFactor = attributes.zoomFactor
 
       var newAttributes = attributes
       newAttributes.cameraExposure.mode = device.exposureMode
@@ -635,8 +640,14 @@ extension CameraManager {
       newAttributes.cameraExposure.targetBias = device.exposureTargetBias
       newAttributes.frameRate = device.activeVideoMaxFrameDuration.timescale
       
+    
+    if preserveZoom {
+      newAttributes.zoomFactor = currentZoomFactor
+    } else {
       // Use logical zoom factor instead of physical
       newAttributes.zoomFactor = DeviceCapabilities.getLogicalZoomFactor(from: device)
+    }
+      
       
       newAttributes.lightMode = device.lightMode
       newAttributes.hdrMode = device.hdrMode
