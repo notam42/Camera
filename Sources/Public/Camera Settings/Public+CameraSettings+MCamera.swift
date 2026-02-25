@@ -231,13 +231,6 @@ public extension MCamera {
     func setCameraHDRMode(_ hdrMode: CameraHDRMode) -> Self { manager.attributes.hdrMode = hdrMode; return self }
 
     /**
-     Changes the initial camera filters.
-
-     - important: Setting multiple filters simultaneously can affect the performance of the camera.
-     */
-    func setCameraFilters(_ filters: [CIFilter]) -> Self { manager.attributes.cameraFilters = filters; return self }
-
-    /**
      Changes the initial mirror output setting.
      */
     func setMirrorOutput(_ shouldMirror: Bool) -> Self { manager.attributes.mirrorOutput = shouldMirror; return self }
@@ -306,9 +299,8 @@ public extension MCamera {
      struct ContentView: View {
         var body: some View {
             MCamera()
-                .onImageCaptured { originalImage, appliedFilter, intensity, controller in
-                    print("Original image received with filters: \(appliedFilter?.rawValue ?? "none") at \(intensity)% intensity")
-                    saveImageForEditing(originalImage, appliedFilters: filterNames, intensity: intensity)
+                .onImageCaptured { image, controller in
+                    saveImageForEditing(image)
                     controller.reopenCameraScreen()
                 }
 
@@ -318,7 +310,7 @@ public extension MCamera {
      }
      ```
      */
-    func onImageCaptured(_ action: @escaping (UIImage, CameraFilter?, Double, MCamera.Controller) -> ()) -> Self { config.imageCapturedAction = action; return self }
+    func onImageCaptured(_ action: @escaping (UIImage, MCamera.Controller) -> ()) -> Self { config.imageCapturedAction = action; return self }
 
     /**
      Defines action that is called when a video is captured.

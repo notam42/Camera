@@ -14,7 +14,6 @@ import Foundation
 extension DefaultCameraScreen { class Config {
     var captureButtonAllowed: Bool = true
     var cameraOutputSwitchAllowed: Bool = true
-    var cameraFilterSwitchAllowed: Bool = true
     var cameraPositionButtonAllowed: Bool = true
     var flashButtonAllowed: Bool = true
     var lightButtonAllowed: Bool = true

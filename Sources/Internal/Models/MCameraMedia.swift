@@ -8,62 +8,32 @@
 //
 //  Copyright ©2024 Mijick. All rights reserved.
 
-
 import SwiftUI
 
 public struct MCameraMedia: Sendable {
     let image: UIImage?
     let video: URL?
-  
-  // New properties for filter support
-    let originalImage: UIImage?
-    let appliedFilter: CameraFilter?
-  let filterIntensity: Double
 
     init?(data: Any?) {
-      if let image = data as? UIImage {
-        self.image = image
-        self.video = nil
-        self.originalImage = nil
-        self.appliedFilter = nil
-        self.filterIntensity = 100
-      }
-      else if let video = data as? URL {
-        self.video = video
-        self.image = nil
-        self.originalImage = nil
-        self.appliedFilter = nil
-        self.filterIntensity = 100.0
-      }
-        else { return nil }
+        if let image = data as? UIImage {
+            self.image = image
+            self.video = nil
+        } else if let video = data as? URL {
+            self.video = video
+            self.image = nil
+        } else { return nil }
     }
-  
-  // New initializer for images with filter support
-  init?(originalImage: UIImage?, filteredImage: UIImage?, appliedFilter: CameraFilter? = nil, filterIntensity: Double = 100.0) {
-      self.originalImage = originalImage
-      self.image = filteredImage
-      self.video = nil
-      self.appliedFilter = appliedFilter
-    self.filterIntensity = filterIntensity
-  }
-  
-  // New initializer for video (keeping existing behavior)
-  init?(videoURL: URL) {
-      self.video = videoURL
-      self.image = nil
-      self.originalImage = nil
-      self.appliedFilter = nil
-    self.filterIntensity = 100.0
-  }
+
+    init?(videoURL: URL) {
+        self.video = videoURL
+        self.image = nil
+    }
 }
 
 // MARK: Equatable
 extension MCameraMedia: Equatable {
-  public static func == (lhs: MCameraMedia, rhs: MCameraMedia) -> Bool {
-    lhs.image == rhs.image &&
-    lhs.video == rhs.video &&
-    lhs.originalImage == rhs.originalImage &&
-    lhs.appliedFilter == rhs.appliedFilter &&
-    lhs.filterIntensity == rhs.filterIntensity
-  }
+    public static func == (lhs: MCameraMedia, rhs: MCameraMedia) -> Bool {
+        lhs.image == rhs.image &&
+        lhs.video == rhs.video
+    }
 }

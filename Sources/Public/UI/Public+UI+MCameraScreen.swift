@@ -188,20 +188,6 @@ public extension MCameraScreen {
     func setHDRMode(_ hdrMode: CameraHDRMode) throws { try cameraManager.setHDRMode(hdrMode) }
 
     /**
-     Set the camera filters to be applied to the camera output.
-
-     - important: Setting multiple filters simultaneously can affect the performance of the camera.
-     */
-    func setCameraFilters(_ filters: [CIFilter]) { cameraManager.setCameraFilters(filters) }
-  
-    /**
-     Set the intensity of the currently applied filter (0.0 to 100.0).
-     
-     - parameter intensity: The filter intensity percentage (0.0 = no effect, 100.0 = full effect)
-     */
-    func setFilterIntensity(_ intensity: Double) { cameraManager.setFilterIntensity(intensity) }
-
-    /**
      Set whether the camera output should be mirrored.
      */
     func setMirrorOutput(_ shouldMirror: Bool) { cameraManager.setMirrorOutput(shouldMirror) }
@@ -226,8 +212,6 @@ public extension MCameraScreen {
     var iso: Float { cameraManager.attributes.cameraExposure.iso }
     var exposureMode: AVCaptureDevice.ExposureMode { cameraManager.attributes.cameraExposure.mode }
     var hdrMode: CameraHDRMode { cameraManager.attributes.hdrMode }
-    var cameraFilters: [CIFilter] { cameraManager.attributes.cameraFilters }
-    var filterIntensity: Double { cameraManager.attributes.filterIntensity }
     var isOutputMirrored: Bool { cameraManager.attributes.mirrorOutput }
     var isGridVisible: Bool { cameraManager.attributes.isGridVisible }
 }

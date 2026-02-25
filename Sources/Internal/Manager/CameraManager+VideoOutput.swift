@@ -106,52 +106,13 @@ private extension CameraManagerVideoOutput {
 // MARK: Receive Data
 extension CameraManagerVideoOutput: @preconcurrency AVCaptureFileOutputRecordingDelegate {
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: (any Error)?) { Task {
-        let videoURL = try await prepareVideo(outputFileURL: outputFileURL, cameraFilters: parent.attributes.cameraFilters)
+        let videoURL = outputFileURL
         let capturedVideo = MCameraMedia(data: videoURL)
 
         await Task.sleep(seconds: Animation.duration)
         parent.setCapturedMedia(capturedVideo)
     }}
 }
-private extension CameraManagerVideoOutput {
-    func prepareVideo(outputFileURL: URL, cameraFilters: [CIFilter]) async throws -> URL {
-        if cameraFilters.isEmpty { return outputFileURL }
-
-        let asset = AVAsset(url: outputFileURL)
-        let videoComposition = try await AVVideoComposition.applyFilters(to: asset) { self.applyFiltersToVideo($0, cameraFilters) }
-        let fileUrl = FileManager.prepareURLForVideoOutput()
-        let exportSession = prepareAssetExportSession(asset, fileUrl, videoComposition)
-
-        try await exportVideo(exportSession, fileUrl)
-        return fileUrl ?? outputFileURL
-    }
-}
-private extension CameraManagerVideoOutput {
-    nonisolated func applyFiltersToVideo(_ request: AVAsynchronousCIImageFilteringRequest, _ filters: [CIFilter]) {
-        let videoFrame = prepareVideoFrame(request, filters)
-        request.finish(with: videoFrame, context: nil)
-    }
-    nonisolated func exportVideo(_ exportSession: AVAssetExportSession?, _ fileUrl: URL?) async throws { if let fileUrl {
-        if #available(iOS 18, *) { try await exportSession?.export(to: fileUrl, as: .mov) }
-        else { await exportSession?.export() }
-    }}
-}
-private extension CameraManagerVideoOutput {
-    nonisolated func prepareVideoFrame(_ request: AVAsynchronousCIImageFilteringRequest, _ filters: [CIFilter]) -> CIImage { request
-        .sourceImage
-        .clampedToExtent()
-        .applyingFilters(filters)
-    }
-    nonisolated func prepareAssetExportSession(_ asset: AVAsset, _ fileUrl: URL?, _ composition: AVVideoComposition?) -> AVAssetExportSession? {
-        let export = AVAssetExportSession(asset: asset, presetName: AVAssetExportPreset1920x1080)
-        export?.outputFileType = .mov
-        export?.outputURL = fileUrl
-        export?.videoComposition = composition
-        return export
-    }
-}
-
-
 // MARK: - HELPERS
 fileprivate extension MTimerID {
     static let camera: MTimerID = .init(rawValue: "mijick-camera")

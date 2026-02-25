@@ -452,31 +452,6 @@ extension CameraManager {
     }
 }
 
-// MARK: Set Camera Filters
-extension CameraManager {
-    func setCameraFilters(_ cameraFilters: [CIFilter]) {
-        guard cameraFilters != attributes.cameraFilters, !isChanging else { return }
-        attributes.cameraFilters = cameraFilters
-    }
-}
-
-extension CameraManager {
-  func setSelectedCameraFilter(_ filter: CameraFilter) {
-    guard filter != attributes.selectedCameraFilter, !isChanging else { return }
-    attributes.selectedCameraFilter = filter
-    attributes.cameraFilters = filter.filters
-  }
-}
-
-// MARK: Set Filter Intensity
-extension CameraManager {
-    func setFilterIntensity(_ intensity: Double) {
-        let clampedIntensity = max(0.0, min(100.0, intensity))
-        guard clampedIntensity != attributes.filterIntensity, !isChanging else { return }
-        attributes.filterIntensity = clampedIntensity
-    }
-}
-
 // MARK: Set Exposure Mode
 extension CameraManager {
     func setExposureMode(_ exposureMode: AVCaptureDevice.ExposureMode) throws {

@@ -60,47 +60,14 @@ extension CameraManagerPhotoOutput: @preconcurrency AVCapturePhotoCaptureDelegat
               let ciImage = CIImage(data: imageData)
         else { return }
 
-      // Process original image (without filters)
-              let originalCGImage = prepareCGImage(ciImage)
-              let originalUIImage = prepareUIImage(originalCGImage)
-      
-      // Process filtered image (with filters applied at current intensity)
-      let filteredCIImage = prepareCIImage(ciImage, parent.attributes.cameraFilters)
-              let filteredCGImage = prepareCGImage(filteredCIImage)
-              let filteredUIImage = prepareUIImage(filteredCGImage)
-      
-      // CHANGE: Pass the enum directly
-              let selectedFilter = parent.attributes.selectedCameraFilter
-              let appliedFilter = selectedFilter != .none ? selectedFilter : nil
-              let currentIntensity = parent.attributes.filterIntensity
-      
-      // ENSURE both images exist - use originalUIImage as fallback
-              let finalOriginalImage = originalUIImage
-              let finalFilteredImage = filteredUIImage ?? originalUIImage
-      
-      // Create media with both versions
-      guard let capturedMedia = MCameraMedia(
-                  originalImage: finalOriginalImage,
-                  filteredImage: finalFilteredImage,
-                  appliedFilter: appliedFilter,
-                  filterIntensity: currentIntensity
-              ) else { return }
-      
-      
-      /*
-        let capturedCIImage = prepareCIImage(ciImage, parent.attributes.cameraFilters)
-        let capturedCGImage = prepareCGImage(capturedCIImage)
+        let capturedCGImage = prepareCGImage(ciImage)
         let capturedUIImage = prepareUIImage(capturedCGImage)
         let capturedMedia = MCameraMedia(data: capturedUIImage)
-       */
 
         parent.setCapturedMedia(capturedMedia)
     }
 }
 private extension CameraManagerPhotoOutput {
-    func prepareCIImage(_ ciImage: CIImage, _ filters: [CIFilter]) -> CIImage {
-        ciImage.applyingFilters(filters, intensity: parent.attributes.filterIntensity)
-    }
     func prepareCGImage(_ ciImage: CIImage) -> CGImage? {
         CIContext().createCGImage(ciImage, from: ciImage.extent)
     }

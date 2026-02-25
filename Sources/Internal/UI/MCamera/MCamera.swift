@@ -54,7 +54,6 @@ import SwiftUI
     - ``setCameraISO(_:)``
     - ``setCameraExposureMode(_:)``
     - ``setCameraHDRMode(_:)``
-    - ``setCameraFilters(_:)``
     - ``setMirrorOutput(_:)``
     - ``setGridVisibility(_:)``
     - ``setFocusImage(_:)``
@@ -72,7 +71,6 @@ import SwiftUI
  struct ContentView: View {
     var body: some View {
         MCamera()
-            .setCameraFilters([.init(name: "CISepiaTone")!])
             .setCameraPosition(.back)
             .setCameraOutputType(.video)
             .setAudioAvailability(false)
@@ -147,20 +145,10 @@ private extension MCamera {
         config.appDelegate?.orientationLock = orientation ?? config.originalOrientationLock
         UINavigationController.attemptRotationToDeviceOrientation()
     }
-//    func notifyUserOfMediaCaptured(_ capturedMedia: MCameraMedia) {
-//        if let image = capturedMedia.getImage() { config.imageCapturedAction(image, .init(mCamera: self)) }
-//        else if let video = capturedMedia.getVideo() { config.videoCapturedAction(video, .init(mCamera: self)) }
-//    }
-  func notifyUserOfMediaCaptured(_ capturedMedia: MCameraMedia) {
-          if let originalImage = capturedMedia.getOriginalImage() {
-              let appliedFilter = capturedMedia.getAppliedFilter()
-            let intensity = capturedMedia.getFilterIntensity()
-              config.imageCapturedAction(originalImage, appliedFilter, intensity, .init(mCamera: self))
-          }
-          else if let video = capturedMedia.getVideo() {
-              config.videoCapturedAction(video, .init(mCamera: self))
-          }
-      }
+    func notifyUserOfMediaCaptured(_ capturedMedia: MCameraMedia) {
+        if let image = capturedMedia.getImage() { config.imageCapturedAction(image, .init(mCamera: self)) }
+        else if let video = capturedMedia.getVideo() { config.videoCapturedAction(video, .init(mCamera: self)) }
+    }
 }
 
 // MARK: Camera Screen

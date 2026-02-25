@@ -180,17 +180,13 @@ extension CameraMetalView: @preconcurrency AVCaptureVideoDataOutputSampleBufferD
         guard let cvImageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
         let currentFrame = captureCurrentFrame(cvImageBuffer)
-        let currentFrameWithFiltersApplied = applyingFiltersToCurrentFrame(currentFrame)
-        redrawCameraView(currentFrameWithFiltersApplied)
+        redrawCameraView(currentFrame)
     }
 }
 private extension CameraMetalView {
     func captureCurrentFrame(_ cvImageBuffer: CVImageBuffer) -> CIImage {
         let currentFrame = CIImage(cvImageBuffer: cvImageBuffer)
         return currentFrame.oriented(parent.attributes.frameOrientation)
-    }
-    func applyingFiltersToCurrentFrame(_ currentFrame: CIImage) -> CIImage {
-        currentFrame.applyingFilters(parent.attributes.cameraFilters, intensity: parent.attributes.filterIntensity)
     }
     func redrawCameraView(_ frame: CIImage) {
         currentFrame = frame
