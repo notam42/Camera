@@ -16,11 +16,16 @@ struct BottomButton: View {
     let iconColor: Color
     let backgroundColor: Color
     let rotationAngle: Angle
+    let accessibilityLabel: String
+    let accessibilityValue: String
     let action: () -> ()
 
 
     var body: some View {
-        Button(action: action, label: createButtonLabel).buttonStyle(ButtonScaleStyle())
+        Button(action: action, label: createButtonLabel)
+            .buttonStyle(ButtonScaleStyle())
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue(accessibilityValue)
     }
 }
 private extension BottomButton {

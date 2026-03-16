@@ -14,11 +14,16 @@ import SwiftUI
 extension DefaultCameraScreen { struct CaptureButton: View {
     let outputType: CameraOutputType
     let isRecording: Bool
+    let accessibilityLabel: String
+    let accessibilityValue: String
     let action: () -> ()
 
 
     var body: some View {
-        Button(action: action, label: createButtonLabel).buttonStyle(ButtonScaleStyle())
+        Button(action: action, label: createButtonLabel)
+            .buttonStyle(ButtonScaleStyle())
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue(accessibilityValue)
     }
 }}
 private extension DefaultCameraScreen.CaptureButton {

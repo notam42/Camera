@@ -27,7 +27,12 @@ extension DefaultCameraScreen { struct CameraOutputSwitch: View {
 }}
 private extension DefaultCameraScreen.CameraOutputSwitch {
     func createOutputTypeButton(_ outputType: CameraOutputType) -> some View {
-        Button(icon: getOutputTypeButtonIcon(outputType), active: isOutputTypeButtonActive(outputType)) {
+        Button(
+            icon: getOutputTypeButtonIcon(outputType),
+            active: isOutputTypeButtonActive(outputType),
+            accessibilityLabel: outputTypeAccessibilityLabel(outputType),
+            accessibilityValue: outputTypeAccessibilityValue(outputType)
+        ) {
             parent.setOutputType(outputType)
         }
         .rotationEffect(parent.iconAngle)
@@ -42,6 +47,13 @@ private extension DefaultCameraScreen.CameraOutputSwitch {
     func isOutputTypeButtonActive(_ outputType: CameraOutputType) -> Bool {
         outputType == parent.cameraOutputType
     }
+    func outputTypeAccessibilityLabel(_ outputType: CameraOutputType) -> String { switch outputType {
+        case .photo: "Photo"
+        case .video: "Video"
+    }}
+    func outputTypeAccessibilityValue(_ outputType: CameraOutputType) -> String {
+        isOutputTypeButtonActive(outputType) ? "Selected" : "Not Selected"
+    }
 }
 
 
@@ -49,11 +61,16 @@ private extension DefaultCameraScreen.CameraOutputSwitch {
 fileprivate struct Button: View {
     let icon: ImageResource
     let active: Bool
+    let accessibilityLabel: String
+    let accessibilityValue: String
     let action: () -> ()
 
 
     var body: some View {
-        SwiftUI.Button(action: action, label: createButtonLabel).buttonStyle(ButtonScaleStyle())
+        SwiftUI.Button(action: action, label: createButtonLabel)
+            .buttonStyle(ButtonScaleStyle())
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue(accessibilityValue)
     }
 }
 private extension Button {

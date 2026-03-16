@@ -76,6 +76,8 @@ private extension DefaultCameraScreen.BottomBar {
             iconColor: lightButtonIconColor,
             backgroundColor: .init(.mijickBackgroundSecondary),
             rotationAngle: parent.iconAngle,
+            accessibilityLabel: "Light",
+            accessibilityValue: lightButtonAccessibilityValue,
             action: changeLightMode
         )
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -85,6 +87,8 @@ private extension DefaultCameraScreen.BottomBar {
         DefaultCameraScreen.CaptureButton(
             outputType: parent.cameraOutputType,
             isRecording: parent.isRecording,
+            accessibilityLabel: captureButtonAccessibilityLabel,
+            accessibilityValue: captureButtonAccessibilityValue,
             action: parent.captureOutput
         )
         .transition(.scale)
@@ -95,6 +99,8 @@ private extension DefaultCameraScreen.BottomBar {
             iconColor: changeCameraPositionButtonIconColor,
             backgroundColor: .init(.mijickBackgroundSecondary),
             rotationAngle: parent.iconAngle,
+            accessibilityLabel: "Camera Position",
+            accessibilityValue: cameraPositionAccessibilityValue,
             action: changeCameraPosition
         )
         .frame(maxWidth: .infinity, alignment: .trailing)
@@ -119,6 +125,16 @@ private extension DefaultCameraScreen.BottomBar {
         case .off: .init(.mijickBackgroundInverted)
     }}
     var changeCameraPositionButtonIconColor: Color { .init(.mijickBackgroundInverted) }
+    var lightButtonAccessibilityValue: String { parent.lightMode == .on ? "On" : "Off" }
+    var cameraPositionAccessibilityValue: String { parent.cameraPosition == .front ? "Front" : "Back" }
+    var captureButtonAccessibilityLabel: String { switch parent.cameraOutputType {
+        case .photo: "Take Photo"
+        case .video: parent.isRecording ? "Stop Recording" : "Start Recording"
+    }}
+    var captureButtonAccessibilityValue: String { switch parent.cameraOutputType {
+        case .photo: "Photo"
+        case .video: parent.isRecording ? "Recording" : "Video"
+    }}
 }
 private extension DefaultCameraScreen.BottomBar {
     var isOutputTypeSwitchActive: Bool { parent.config.cameraOutputSwitchAllowed && parent.cameraManager.captureSession.isRunning && !parent.isRecording }

@@ -32,6 +32,8 @@ struct ZoomButton: View {
                         )
                 )
         }
+        .accessibilityLabel("Zoom")
+        .accessibilityValue(zoomAccessibilityValue)
         .scaleEffect(isSelected ? 1.1 : 1.0)
         .animation(.easeInOut(duration: 0.15), value: isSelected)
     }
@@ -45,6 +47,11 @@ struct ZoomButton: View {
         } else {
             return String(format: "%.1f×", factor)
         }
+    }
+
+    private var zoomAccessibilityValue: String {
+        let value = formatZoomFactor(factor)
+        return isSelected ? "\(value), selected" : value
     }
 }
 

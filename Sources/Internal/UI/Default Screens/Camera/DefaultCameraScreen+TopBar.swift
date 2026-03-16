@@ -31,8 +31,12 @@ extension DefaultCameraScreen { struct TopBar: View {
 }}
 private extension DefaultCameraScreen.TopBar {
     @ViewBuilder func createCloseButton() -> some View { if isCloseButtonActive {
-        CloseButton(action: parent.closeMCameraAction)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        CloseButton(
+            accessibilityLabel: "Close",
+            accessibilityValue: "Camera",
+            action: parent.closeMCameraAction
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
     }}
     @ViewBuilder func createCentralView() -> some View { if isCentralViewActive {
         Text(parent.recordingTime.toString())
@@ -53,6 +57,8 @@ private extension DefaultCameraScreen.TopBar {
         DefaultCameraScreen.TopButton(
             icon: gridButtonIcon,
             iconRotationAngle: parent.iconAngle,
+            accessibilityLabel: "Grid",
+            accessibilityValue: gridButtonAccessibilityValue,
             action: changeGridVisibility
         )
     }}
@@ -60,6 +66,8 @@ private extension DefaultCameraScreen.TopBar {
         DefaultCameraScreen.TopButton(
             icon: flipButtonIcon,
             iconRotationAngle: parent.iconAngle,
+            accessibilityLabel: "Mirror Output",
+            accessibilityValue: flipButtonAccessibilityValue,
             action: changeMirrorOutput
         )
     }}
@@ -67,6 +75,8 @@ private extension DefaultCameraScreen.TopBar {
         DefaultCameraScreen.TopButton(
             icon: flashButtonIcon,
             iconRotationAngle: parent.iconAngle,
+            accessibilityLabel: "Flash",
+            accessibilityValue: flashButtonAccessibilityValue,
             action: changeFlashMode
         )
     }}
@@ -103,6 +113,13 @@ private extension DefaultCameraScreen.TopBar {
         case .off: .mijickIconFlashOff
         case .on: .mijickIconFlashOn
         case .auto: .mijickIconFlashAuto
+    }}
+    var gridButtonAccessibilityValue: String { parent.isGridVisible ? "On" : "Off" }
+    var flipButtonAccessibilityValue: String { parent.isOutputMirrored ? "On" : "Off" }
+    var flashButtonAccessibilityValue: String { switch parent.flashMode {
+        case .off: "Off"
+        case .on: "On"
+        case .auto: "Auto"
     }}
 }
 private extension DefaultCameraScreen.TopBar {

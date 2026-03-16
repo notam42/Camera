@@ -34,9 +34,13 @@ struct DefaultCameraErrorScreen: MCameraErrorScreen {
 }
 private extension DefaultCameraErrorScreen {
     func createCloseButton() -> some View {
-        CloseButton(action: closeMCameraAction)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 20)
+        CloseButton(
+            accessibilityLabel: "Close",
+            accessibilityValue: "Camera",
+            action: closeMCameraAction
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 20)
     }
     func createTitle() -> some View {
         Text(title)
@@ -61,6 +65,8 @@ private extension DefaultCameraErrorScreen {
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(Color(.mijickTextBrand))
         }
+        .accessibilityLabel(openSettingsButton)
+        .accessibilityValue(title)
     }
 }
 

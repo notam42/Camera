@@ -12,11 +12,15 @@
 import SwiftUI
 
 struct CloseButton: View {
+    let accessibilityLabel: String
+    let accessibilityValue: String
     let action: () -> ()
 
 
     var body: some View {
         Button(action: action, label: createButtonLabel)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityValue(accessibilityValue)
     }
 }
 private extension CloseButton {

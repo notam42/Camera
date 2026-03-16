@@ -66,6 +66,8 @@ private extension DefaultCapturedMediaScreen {
             iconColor: .init(.mijickBackgroundInverted),
             backgroundColor: .init(.mijickBackgroundSecondary),
             rotationAngle: .zero,
+            accessibilityLabel: "Retake",
+            accessibilityValue: capturedMediaAccessibilityValue,
             action: retakeAction
         )
         .transition(.scale)
@@ -76,6 +78,8 @@ private extension DefaultCapturedMediaScreen {
             iconColor: .init(.mijickBackgroundPrimary),
             backgroundColor: .init(.mijickBackgroundInverted),
             rotationAngle: .zero,
+            accessibilityLabel: "Save",
+            accessibilityValue: capturedMediaAccessibilityValue,
             action: acceptMediaAction
         )
         .transition(.scale)
@@ -86,5 +90,13 @@ private extension DefaultCapturedMediaScreen {
     func onVideoAppear(_ url: URL) {
         player = .init(url: url)
         player.play()
+    }
+}
+
+private extension DefaultCapturedMediaScreen {
+    var capturedMediaAccessibilityValue: String {
+        if capturedMedia.getVideo() != nil { return "Video" }
+        if capturedMedia.getImage() != nil { return "Photo" }
+        return "Media"
     }
 }

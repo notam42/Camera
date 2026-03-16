@@ -53,6 +53,8 @@ private extension ExampleCameraScreenWithZoom {
                     .background(Color.black.opacity(0.3))
                     .clipShape(Circle())
             }
+            .accessibilityLabel("Close")
+            .accessibilityValue("Camera")
             
             Spacer()
             
@@ -65,6 +67,8 @@ private extension ExampleCameraScreenWithZoom {
                     .background(Color.black.opacity(0.3))
                     .clipShape(Circle())
             }
+            .accessibilityLabel("Flash")
+            .accessibilityValue(flashAccessibilityValue)
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
@@ -80,6 +84,8 @@ private extension ExampleCameraScreenWithZoom {
                     .foregroundColor(.white)
                     .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Camera Position")
+            .accessibilityValue(cameraPositionAccessibilityValue)
             
             // Capture button
             Button(action: captureOutput) {
@@ -92,6 +98,8 @@ private extension ExampleCameraScreenWithZoom {
                             .frame(width: 80, height: 80)
                     )
             }
+            .accessibilityLabel(captureButtonAccessibilityLabel)
+            .accessibilityValue(captureButtonAccessibilityValue)
             
             // Media gallery (placeholder)
             Rectangle()
@@ -128,6 +136,40 @@ private extension ExampleCameraScreenWithZoom {
         case .auto: return "bolt.badge.automatic"
         }
     }
+
+    var flashAccessibilityValue: String {
+        switch cameraManager.attributes.flashMode {
+        case .off: "Off"
+        case .on: "On"
+        case .auto: "Auto"
+        }
+    }
+
+    var cameraPositionAccessibilityValue: String { cameraPosition == .front ? "Front" : "Back" }
+
+    var captureButtonAccessibilityLabel: String { switch cameraOutputType {
+        case .photo: "Take Photo"
+        case .video: isRecording ? "Stop Recording" : "Start Recording"
+    }}
+
+    var captureButtonAccessibilityValue: String { switch cameraOutputType {
+        case .photo: "Photo"
+        case .video: isRecording ? "Recording" : "Video"
+    }}
+}
+
+private extension ExampleCameraScreenWithAlwaysVisibleZoom {
+    var cameraPositionAccessibilityValue: String { cameraPosition == .front ? "Front" : "Back" }
+
+    var captureButtonAccessibilityLabel: String { switch cameraOutputType {
+        case .photo: "Take Photo"
+        case .video: isRecording ? "Stop Recording" : "Start Recording"
+    }}
+
+    var captureButtonAccessibilityValue: String { switch cameraOutputType {
+        case .photo: "Photo"
+        case .video: isRecording ? "Recording" : "Video"
+    }}
 }
 
 // MARK: - Alternative Implementation with Always-Visible Zoom Buttons
@@ -152,12 +194,16 @@ struct ExampleCameraScreenWithAlwaysVisibleZoom: MCameraScreen {
             HStack {
                 Button("Close", action: closeMCameraAction)
                     .foregroundColor(.white)
+                    .accessibilityLabel("Close")
+                    .accessibilityValue("Camera")
                 
                 Spacer()
                 
                 Button("Capture", action: captureOutput)
                     .foregroundColor(.white)
                     .font(.headline)
+                    .accessibilityLabel(captureButtonAccessibilityLabel)
+                    .accessibilityValue(captureButtonAccessibilityValue)
                 
                 Spacer()
                 
@@ -168,6 +214,8 @@ struct ExampleCameraScreenWithAlwaysVisibleZoom: MCameraScreen {
                     }
                 })
                 .foregroundColor(.white)
+                .accessibilityLabel("Camera Position")
+                .accessibilityValue(cameraPositionAccessibilityValue)
             }
             .padding()
             .background(Color.black)
